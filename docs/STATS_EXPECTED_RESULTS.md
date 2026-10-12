@@ -153,3 +153,35 @@ Patrones: ninguno. Casi disparos: la mejor racha es de dos eliminaciones (player
 - En combat la lista de jugadores incluye a quien solo aparece como `victimPlayerId`.
 - La desviacion estandar es poblacional (se divide entre n).
 - Las metricas no definidas no aparecen en el mapa de metricas.
+
+## Agregados sobre las cuatro partidas de ejemplo
+
+Se obtienen analizando las cuatro partidas y consultando `/stats/games/{gameId}` y `/stats/players/{playerId}`. Los valores salen de aplicar la media, el minimo y el maximo a los `*.expected.json` de cada par de partidas. Las pruebas de `ExampleAggregatesSpec` los verifican.
+
+Juego racing (2 partidas):
+
+| Agregado | Valor |
+|---|---|
+| matchesAnalyzed, matchesCompleted | 2, 2 |
+| min_fastestLapMs, max_fastestLapMs, mean_fastestLapMs | 88000, 89500, 88750 |
+| mean_totalLapsCompleted | 14 |
+| patternCount_IMPROVING_LAP_STREAK | 2 |
+| patternCount_RACE_COMEBACK | 1 |
+
+Juego combat (2 partidas):
+
+| Agregado | Valor |
+|---|---|
+| matchesAnalyzed | 2 |
+| min_totalEliminations, max_totalEliminations, mean_totalEliminations | 7, 10, 8.5 |
+| mean_mostEliminationsByOnePlayer | 5 |
+| patternCount_KILL_STREAK | 2 |
+| patternCount_SCORE_COMEBACK | 1 |
+
+Jugadores (cada uno juega una sola partida, por eso media, minimo y maximo coinciden):
+
+| Jugador | Agregados |
+|---|---|
+| player-04 | matchesPlayed 1, wins 1, mean_bestLapMs 89500, min y max_overtakesMade 3, patternCount_IMPROVING_LAP_STREAK 1, patternCount_RACE_COMEBACK 1 |
+| player-21 | wins 1, max_eliminations 6, mean_killDeathRatio 3, patternCount_KILL_STREAK 1, patternCount_SCORE_COMEBACK 1 |
+| player-23 | wins 0, mean_deaths 5, sin patternCount, sin mean_damagePerElimination (la metrica no esta definida para el) |

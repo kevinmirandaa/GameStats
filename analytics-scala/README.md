@@ -41,6 +41,17 @@ Variable de entorno: `PORT` (8081 por defecto).
 
 Sin analizador, un juego igual recibe el analisis generico.
 
+## Analizadores incluidos
+
+Cada uno vive en `analysis/games/` y se registra en `Main`. Las definiciones exactas estan en `docs/STATS.md`.
+
+| Juego | Metricas de jugador | Metricas de partida | Patrones |
+|---|---|---|---|
+| racing | lapsCompleted, bestLapMs, averageLapMs, lapTimeStdDevMs, topSpeedKmh, penaltySecondsTotal, pitStopCount, pitStopTotalMs, overtakesMade, effectiveRaceTimeMs, finalPosition, positionsGained | totalLapsCompleted, fastestLapMs, averageLapMs, penaltyCount, pitStopCount, positionChangesTotal, leadChanges, finishedPlayers | IMPROVING_LAP_STREAK, RACE_COMEBACK |
+| combat | eliminations, deaths, killDeathRatio, damageDealtTotal, damageDealtAverage, shotsFired, shotsHit, accuracyPercent, damagePerElimination, longestEliminationDistanceMeters | totalEliminations, totalDamageDealt, eliminationsPerMinute, mostEliminationsByOnePlayer, averageEliminationDistanceMeters | KILL_STREAK, SCORE_COMEBACK |
+
+Una metrica sin datos suficientes se omite del resultado, nunca se rellena con cero.
+
 ## Comandos
 
 ```bash

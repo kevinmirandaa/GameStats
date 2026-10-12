@@ -1,6 +1,7 @@
 package gamestats.analytics
 
 import gamestats.analytics.analysis.GameAnalyzerRegistry
+import gamestats.analytics.analysis.games.{CombatAnalyzer, RacingAnalyzer}
 import gamestats.analytics.http.AnalyticsRoutes
 import gamestats.analytics.service.AnalyticsService
 import gamestats.analytics.storage.InMemoryAnalysisStore
@@ -12,6 +13,6 @@ object Main extends cask.Main:
 
   override def host: String = "0.0.0.0"
 
-  private val service = AnalyticsService(GameAnalyzerRegistry.withoutGameAnalyzers, InMemoryAnalysisStore())
+  private val service = AnalyticsService(GameAnalyzerRegistry(List(RacingAnalyzer, CombatAnalyzer)), InMemoryAnalysisStore())
 
   val allRoutes: Seq[cask.Routes] = Seq(AnalyticsRoutes(service))

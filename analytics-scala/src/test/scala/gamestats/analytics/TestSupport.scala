@@ -34,6 +34,17 @@ object TestSupport:
       data = EventData(data)
     )
 
+  def finishEvent(secondOffset: Int, eventId: String, winner: Option[String], ranking: List[String] = Nil): Event =
+    eventAt(secondOffset, eventId, None).copy(
+      eventType = EventType.MatchFinished,
+      data = EventData(
+        ujson.Obj.from(
+          winner.map(player => "winnerPlayerId" -> ujson.Str(player)).toList :+
+            ("ranking" -> ujson.Arr.from(ranking.map(ujson.Str(_))))
+        )
+      )
+    )
+
   def toyBatch(events: List[Event], status: MatchStatus = MatchStatus.Completed): MatchBatch =
     MatchBatch("toy", "1.0", "toy-match", status, events)
 
