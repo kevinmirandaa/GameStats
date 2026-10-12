@@ -28,7 +28,7 @@ const (
 	defaultAnalyticsMaxAttempts    = 5
 	defaultAnalyticsBackoffMillis  = 200
 	defaultAnalyticsTimeoutSeconds = 10
-	defaultMatchInboxCapacity      = 8192
+	defaultMatchInboxCapacity      = 1024
 )
 
 func Load(lookup func(string) (string, bool)) (Configuration, error) {

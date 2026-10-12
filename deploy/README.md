@@ -92,7 +92,8 @@ Se pueden fijar en el entorno o en un archivo `deploy/.env` (ver `deploy/.env.ex
 
 ## Limites conocidos
 
-- Si Scala no responde, Go reintenta el envio de cada partida con espera creciente. En Compose la ventana es de unos 15 segundos (6 intentos desde 500 ms). Si Scala sigue caido despues, esa partida se pierde y se cuenta en `matchesFailed` de `/metrics`. No hay cola de reenvio.
+- Si Scala no responde, Go reintenta el envio de cada partida con espera creciente. En Compose la ventana es de unos 15 segundos (6 intentos desde 500 ms). Si Scala sigue caido despues, esa partida se pierde y se cuenta en `matchesFailed` de `/metrics`. No hay cola de reenvio, y reenviar esa partida despues da 409 porque sus identificadores de evento y la partida ya quedaron registrados.
 - Scala guarda los resultados en memoria: al reiniciarse el contenedor se pierde el historial.
 - Los puertos 8080 y 8081 se publican en todas las interfaces de la maquina.
 - `make logs` no termina: se detiene con Ctrl+C.
+- Cada partida abierta reserva en Go un buzon de 1024 eventos (unos 180 KB). Cada servicio tiene un limite de memoria de 1 GB en Compose.

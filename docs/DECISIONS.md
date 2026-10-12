@@ -181,3 +181,9 @@ Razon: demuestra el sistema completo funcionando de punta a punta en un entorno 
 Decision: en Compose, Go reintenta el envio a Scala 6 veces desde 500 ms (unos 15 segundos en total), en lugar de los 5 intentos desde 200 ms por defecto. No se agrega cola de reenvio ni persistencia en Scala.
 
 Razon: el QA mostro que con la ventana por defecto (unos 3 segundos) una caida breve de Scala perdia partidas. Una cola persistente y una base de datos exceden lo que pide el enunciado (D09). El limite queda documentado en `deploy/README.md`.
+
+## D30 Buzon por partida de 1024 eventos y limite de memoria
+
+Decision: el buzon de cada partida abierta en Go pasa de 8192 a 1024 eventos y cada servicio tiene un limite de 1 GB en Compose.
+
+Razon: el QA integral midio que 2000 partidas abiertas a la vez usaban 2.88 GiB. Con 1024 usan unos 450 MB y no se pierde ningun evento en las pruebas de carga. Si un buzon se llena, el evento se rechaza con 503 sin quedar registrado como visto, asi que el cliente puede reenviarlo.

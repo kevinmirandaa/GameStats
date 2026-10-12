@@ -34,7 +34,7 @@ POST /events  ->  validar sobre  ->  deduplicar eventId  ->  Registry.Submit
 | ANALYTICS_MAX_ATTEMPTS | 5 |
 | ANALYTICS_INITIAL_BACKOFF_MILLISECONDS | 200 |
 | ANALYTICS_REQUEST_TIMEOUT_SECONDS | 10 |
-| MATCH_INBOX_CAPACITY | 8192 |
+| MATCH_INBOX_CAPACITY | 1024 |
 
 ## Comportamiento de partidas
 

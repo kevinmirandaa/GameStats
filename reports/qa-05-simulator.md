@@ -26,7 +26,6 @@ Notas de la ejecucion: el servidor falso respondia con un cuerpo propio, por lo 
 
 Observaciones menores nuevas, agente simulator: dividir `configuration.Load` (43 lineas) en lectura de banderas, lectura de entorno y validacion; los menores 7 a 12 del informe anterior siguen aceptados como estaban.
 
----
 
 
 ## Informe anterior (primera revision)
