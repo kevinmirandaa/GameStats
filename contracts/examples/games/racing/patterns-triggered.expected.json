@@ -1,0 +1,138 @@
+{
+  "matchId": "match-racing-001",
+  "gameId": "racing",
+  "status": "COMPLETED",
+  "durationSeconds": 383.3,
+  "totalEvents": 30,
+  "eventCountsByType": {
+    "GAME_ACTION": 24,
+    "MATCH_FINISHED": 1,
+    "MATCH_STARTED": 1,
+    "PLAYER_JOINED": 4
+  },
+  "eventCountsByAction": {
+    "LAP_COMPLETED": 16,
+    "PENALTY_APPLIED": 1,
+    "PIT_STOP": 1,
+    "POSITION_CHANGED": 6
+  },
+  "matchMetrics": {
+    "totalLapsCompleted": 16,
+    "fastestLapMs": 89500,
+    "averageLapMs": 92006.25,
+    "penaltyCount": 1,
+    "pitStopCount": 1,
+    "positionChangesTotal": 6,
+    "leadChanges": 1,
+    "finishedPlayers": 4
+  },
+  "players": [
+    {
+      "playerId": "player-01",
+      "eventCount": 6,
+      "metrics": {
+        "lapsCompleted": 4,
+        "bestLapMs": 90000,
+        "averageLapMs": 91875,
+        "lapTimeStdDevMs": 1515.544,
+        "topSpeedKmh": 285.1,
+        "penaltySecondsTotal": 0,
+        "pitStopCount": 0,
+        "pitStopTotalMs": 0,
+        "overtakesMade": 0,
+        "effectiveRaceTimeMs": 367500,
+        "finalPosition": 2,
+        "positionsGained": -1
+      }
+    },
+    {
+      "playerId": "player-02",
+      "eventCount": 7,
+      "metrics": {
+        "lapsCompleted": 4,
+        "bestLapMs": 91800,
+        "averageLapMs": 92275,
+        "lapTimeStdDevMs": 420.565,
+        "topSpeedKmh": 281,
+        "penaltySecondsTotal": 5,
+        "pitStopCount": 0,
+        "pitStopTotalMs": 0,
+        "overtakesMade": 0,
+        "effectiveRaceTimeMs": 374100,
+        "finalPosition": 3,
+        "positionsGained": -1
+      }
+    },
+    {
+      "playerId": "player-03",
+      "eventCount": 7,
+      "metrics": {
+        "lapsCompleted": 4,
+        "bestLapMs": 92200,
+        "averageLapMs": 92825,
+        "lapTimeStdDevMs": 402.337,
+        "topSpeedKmh": 278.5,
+        "penaltySecondsTotal": 0,
+        "pitStopCount": 1,
+        "pitStopTotalMs": 2400,
+        "overtakesMade": 0,
+        "effectiveRaceTimeMs": 371300,
+        "finalPosition": 4,
+        "positionsGained": -1
+      }
+    },
+    {
+      "playerId": "player-04",
+      "eventCount": 8,
+      "metrics": {
+        "lapsCompleted": 4,
+        "bestLapMs": 89500,
+        "averageLapMs": 91050,
+        "lapTimeStdDevMs": 1755.705,
+        "topSpeedKmh": 291.3,
+        "penaltySecondsTotal": 0,
+        "pitStopCount": 0,
+        "pitStopTotalMs": 0,
+        "overtakesMade": 3,
+        "effectiveRaceTimeMs": 364200,
+        "finalPosition": 1,
+        "positionsGained": 3
+      }
+    }
+  ],
+  "patterns": [
+    {
+      "name": "IMPROVING_LAP_STREAK",
+      "playerId": "player-04",
+      "startEventId": "evt-match-racing-001-0009",
+      "endEventId": "evt-match-racing-001-0026",
+      "details": {
+        "streakLength": 4,
+        "firstLapMs": 94000,
+        "lastLapMs": 89500
+      }
+    },
+    {
+      "name": "RACE_COMEBACK",
+      "playerId": "player-04",
+      "startEventId": "evt-match-racing-001-0009",
+      "endEventId": "evt-match-racing-001-0030",
+      "details": {
+        "worstPosition": 4,
+        "worstLap": 1,
+        "finalPosition": 1
+      }
+    },
+    {
+      "name": "IMPROVING_LAP_STREAK",
+      "playerId": "player-03",
+      "startEventId": "evt-match-racing-001-0017",
+      "endEventId": "evt-match-racing-001-0029",
+      "details": {
+        "streakLength": 3,
+        "firstLapMs": 93300,
+        "lastLapMs": 92200
+      }
+    }
+  ]
+}

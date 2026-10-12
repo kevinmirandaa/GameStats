@@ -1,0 +1,763 @@
+{
+  "schemaVersion": "1.0",
+  "gameId": "combat",
+  "gameVersion": "1.0",
+  "matchId": "match-combat-001",
+  "status": "COMPLETED",
+  "events": [
+    {
+      "schemaVersion": "1.0",
+      "eventId": "evt-match-combat-001-0001",
+      "timestamp": "2026-10-12T19:00:00.000Z",
+      "gameId": "combat",
+      "gameVersion": "1.0",
+      "matchId": "match-combat-001",
+      "type": "MATCH_STARTED",
+      "data": {
+        "map": "dust-yard",
+        "mode": "deathmatch"
+      }
+    },
+    {
+      "schemaVersion": "1.0",
+      "eventId": "evt-match-combat-001-0002",
+      "timestamp": "2026-10-12T19:00:01.000Z",
+      "gameId": "combat",
+      "gameVersion": "1.0",
+      "matchId": "match-combat-001",
+      "playerId": "player-21",
+      "type": "PLAYER_JOINED",
+      "data": {
+        "displayName": "Irene"
+      }
+    },
+    {
+      "schemaVersion": "1.0",
+      "eventId": "evt-match-combat-001-0003",
+      "timestamp": "2026-10-12T19:00:02.000Z",
+      "gameId": "combat",
+      "gameVersion": "1.0",
+      "matchId": "match-combat-001",
+      "playerId": "player-22",
+      "type": "PLAYER_JOINED",
+      "data": {
+        "displayName": "Jorge"
+      }
+    },
+    {
+      "schemaVersion": "1.0",
+      "eventId": "evt-match-combat-001-0004",
+      "timestamp": "2026-10-12T19:00:03.000Z",
+      "gameId": "combat",
+      "gameVersion": "1.0",
+      "matchId": "match-combat-001",
+      "playerId": "player-23",
+      "type": "PLAYER_JOINED",
+      "data": {
+        "displayName": "Karla"
+      }
+    },
+    {
+      "schemaVersion": "1.0",
+      "eventId": "evt-match-combat-001-0005",
+      "timestamp": "2026-10-12T19:00:05.000Z",
+      "gameId": "combat",
+      "gameVersion": "1.0",
+      "matchId": "match-combat-001",
+      "playerId": "player-22",
+      "type": "GAME_ACTION",
+      "action": "SHOT_FIRED",
+      "data": {
+        "weapon": "rifle",
+        "hit": false
+      }
+    },
+    {
+      "schemaVersion": "1.0",
+      "eventId": "evt-match-combat-001-0006",
+      "timestamp": "2026-10-12T19:00:05.400Z",
+      "gameId": "combat",
+      "gameVersion": "1.0",
+      "matchId": "match-combat-001",
+      "playerId": "player-22",
+      "type": "GAME_ACTION",
+      "action": "SHOT_FIRED",
+      "data": {
+        "weapon": "rifle",
+        "hit": true
+      }
+    },
+    {
+      "schemaVersion": "1.0",
+      "eventId": "evt-match-combat-001-0007",
+      "timestamp": "2026-10-12T19:00:05.800Z",
+      "gameId": "combat",
+      "gameVersion": "1.0",
+      "matchId": "match-combat-001",
+      "playerId": "player-22",
+      "type": "GAME_ACTION",
+      "action": "DAMAGE_DEALT",
+      "data": {
+        "targetPlayerId": "player-21",
+        "amount": 100,
+        "weapon": "rifle"
+      }
+    },
+    {
+      "schemaVersion": "1.0",
+      "eventId": "evt-match-combat-001-0008",
+      "timestamp": "2026-10-12T19:00:06.200Z",
+      "gameId": "combat",
+      "gameVersion": "1.0",
+      "matchId": "match-combat-001",
+      "playerId": "player-22",
+      "type": "GAME_ACTION",
+      "action": "ELIMINATION",
+      "data": {
+        "victimPlayerId": "player-21",
+        "weapon": "rifle",
+        "distanceMeters": 42.5
+      }
+    },
+    {
+      "schemaVersion": "1.0",
+      "eventId": "evt-match-combat-001-0009",
+      "timestamp": "2026-10-12T19:00:15.000Z",
+      "gameId": "combat",
+      "gameVersion": "1.0",
+      "matchId": "match-combat-001",
+      "playerId": "player-23",
+      "type": "GAME_ACTION",
+      "action": "SHOT_FIRED",
+      "data": {
+        "weapon": "pistol",
+        "hit": true
+      }
+    },
+    {
+      "schemaVersion": "1.0",
+      "eventId": "evt-match-combat-001-0010",
+      "timestamp": "2026-10-12T19:00:15.400Z",
+      "gameId": "combat",
+      "gameVersion": "1.0",
+      "matchId": "match-combat-001",
+      "playerId": "player-23",
+      "type": "GAME_ACTION",
+      "action": "DAMAGE_DEALT",
+      "data": {
+        "targetPlayerId": "player-22",
+        "amount": 25,
+        "weapon": "pistol"
+      }
+    },
+    {
+      "schemaVersion": "1.0",
+      "eventId": "evt-match-combat-001-0011",
+      "timestamp": "2026-10-12T19:00:15.800Z",
+      "gameId": "combat",
+      "gameVersion": "1.0",
+      "matchId": "match-combat-001",
+      "playerId": "player-22",
+      "type": "GAME_ACTION",
+      "action": "SHOT_FIRED",
+      "data": {
+        "weapon": "pistol",
+        "hit": true
+      }
+    },
+    {
+      "schemaVersion": "1.0",
+      "eventId": "evt-match-combat-001-0012",
+      "timestamp": "2026-10-12T19:00:16.200Z",
+      "gameId": "combat",
+      "gameVersion": "1.0",
+      "matchId": "match-combat-001",
+      "playerId": "player-22",
+      "type": "GAME_ACTION",
+      "action": "DAMAGE_DEALT",
+      "data": {
+        "targetPlayerId": "player-23",
+        "amount": 85,
+        "weapon": "pistol"
+      }
+    },
+    {
+      "schemaVersion": "1.0",
+      "eventId": "evt-match-combat-001-0013",
+      "timestamp": "2026-10-12T19:00:16.600Z",
+      "gameId": "combat",
+      "gameVersion": "1.0",
+      "matchId": "match-combat-001",
+      "playerId": "player-22",
+      "type": "GAME_ACTION",
+      "action": "ELIMINATION",
+      "data": {
+        "victimPlayerId": "player-23",
+        "weapon": "pistol",
+        "distanceMeters": 8
+      }
+    },
+    {
+      "schemaVersion": "1.0",
+      "eventId": "evt-match-combat-001-0014",
+      "timestamp": "2026-10-12T19:00:25.000Z",
+      "gameId": "combat",
+      "gameVersion": "1.0",
+      "matchId": "match-combat-001",
+      "playerId": "player-22",
+      "type": "GAME_ACTION",
+      "action": "SHOT_FIRED",
+      "data": {
+        "weapon": "rifle",
+        "hit": true
+      }
+    },
+    {
+      "schemaVersion": "1.0",
+      "eventId": "evt-match-combat-001-0015",
+      "timestamp": "2026-10-12T19:00:25.400Z",
+      "gameId": "combat",
+      "gameVersion": "1.0",
+      "matchId": "match-combat-001",
+      "playerId": "player-22",
+      "type": "GAME_ACTION",
+      "action": "DAMAGE_DEALT",
+      "data": {
+        "targetPlayerId": "player-21",
+        "amount": 70,
+        "weapon": "rifle"
+      }
+    },
+    {
+      "schemaVersion": "1.0",
+      "eventId": "evt-match-combat-001-0016",
+      "timestamp": "2026-10-12T19:00:25.800Z",
+      "gameId": "combat",
+      "gameVersion": "1.0",
+      "matchId": "match-combat-001",
+      "playerId": "player-22",
+      "type": "GAME_ACTION",
+      "action": "ELIMINATION",
+      "data": {
+        "victimPlayerId": "player-21",
+        "weapon": "rifle",
+        "distanceMeters": 55.25
+      }
+    },
+    {
+      "schemaVersion": "1.0",
+      "eventId": "evt-match-combat-001-0017",
+      "timestamp": "2026-10-12T19:00:35.000Z",
+      "gameId": "combat",
+      "gameVersion": "1.0",
+      "matchId": "match-combat-001",
+      "playerId": "player-22",
+      "type": "GAME_ACTION",
+      "action": "SHOT_FIRED",
+      "data": {
+        "weapon": "shotgun",
+        "hit": false
+      }
+    },
+    {
+      "schemaVersion": "1.0",
+      "eventId": "evt-match-combat-001-0018",
+      "timestamp": "2026-10-12T19:00:35.400Z",
+      "gameId": "combat",
+      "gameVersion": "1.0",
+      "matchId": "match-combat-001",
+      "playerId": "player-23",
+      "type": "GAME_ACTION",
+      "action": "SHOT_FIRED",
+      "data": {
+        "weapon": "pistol",
+        "hit": true
+      }
+    },
+    {
+      "schemaVersion": "1.0",
+      "eventId": "evt-match-combat-001-0019",
+      "timestamp": "2026-10-12T19:00:35.800Z",
+      "gameId": "combat",
+      "gameVersion": "1.0",
+      "matchId": "match-combat-001",
+      "playerId": "player-23",
+      "type": "GAME_ACTION",
+      "action": "DAMAGE_DEALT",
+      "data": {
+        "targetPlayerId": "player-22",
+        "amount": 25,
+        "weapon": "pistol"
+      }
+    },
+    {
+      "schemaVersion": "1.0",
+      "eventId": "evt-match-combat-001-0020",
+      "timestamp": "2026-10-12T19:00:36.200Z",
+      "gameId": "combat",
+      "gameVersion": "1.0",
+      "matchId": "match-combat-001",
+      "playerId": "player-22",
+      "type": "GAME_ACTION",
+      "action": "SHOT_FIRED",
+      "data": {
+        "weapon": "shotgun",
+        "hit": true
+      }
+    },
+    {
+      "schemaVersion": "1.0",
+      "eventId": "evt-match-combat-001-0021",
+      "timestamp": "2026-10-12T19:00:36.600Z",
+      "gameId": "combat",
+      "gameVersion": "1.0",
+      "matchId": "match-combat-001",
+      "playerId": "player-22",
+      "type": "GAME_ACTION",
+      "action": "DAMAGE_DEALT",
+      "data": {
+        "targetPlayerId": "player-23",
+        "amount": 100,
+        "weapon": "shotgun"
+      }
+    },
+    {
+      "schemaVersion": "1.0",
+      "eventId": "evt-match-combat-001-0022",
+      "timestamp": "2026-10-12T19:00:37.000Z",
+      "gameId": "combat",
+      "gameVersion": "1.0",
+      "matchId": "match-combat-001",
+      "playerId": "player-22",
+      "type": "GAME_ACTION",
+      "action": "ELIMINATION",
+      "data": {
+        "victimPlayerId": "player-23",
+        "weapon": "shotgun",
+        "distanceMeters": 3.5
+      }
+    },
+    {
+      "schemaVersion": "1.0",
+      "eventId": "evt-match-combat-001-0023",
+      "timestamp": "2026-10-12T19:00:45.000Z",
+      "gameId": "combat",
+      "gameVersion": "1.0",
+      "matchId": "match-combat-001",
+      "playerId": "player-21",
+      "type": "GAME_ACTION",
+      "action": "SHOT_FIRED",
+      "data": {
+        "weapon": "rifle",
+        "hit": true
+      }
+    },
+    {
+      "schemaVersion": "1.0",
+      "eventId": "evt-match-combat-001-0024",
+      "timestamp": "2026-10-12T19:00:45.400Z",
+      "gameId": "combat",
+      "gameVersion": "1.0",
+      "matchId": "match-combat-001",
+      "playerId": "player-21",
+      "type": "GAME_ACTION",
+      "action": "DAMAGE_DEALT",
+      "data": {
+        "targetPlayerId": "player-22",
+        "amount": 90,
+        "weapon": "rifle"
+      }
+    },
+    {
+      "schemaVersion": "1.0",
+      "eventId": "evt-match-combat-001-0025",
+      "timestamp": "2026-10-12T19:00:45.800Z",
+      "gameId": "combat",
+      "gameVersion": "1.0",
+      "matchId": "match-combat-001",
+      "playerId": "player-21",
+      "type": "GAME_ACTION",
+      "action": "ELIMINATION",
+      "data": {
+        "victimPlayerId": "player-22",
+        "weapon": "rifle",
+        "distanceMeters": 42.5
+      }
+    },
+    {
+      "schemaVersion": "1.0",
+      "eventId": "evt-match-combat-001-0026",
+      "timestamp": "2026-10-12T19:00:55.000Z",
+      "gameId": "combat",
+      "gameVersion": "1.0",
+      "matchId": "match-combat-001",
+      "playerId": "player-23",
+      "type": "GAME_ACTION",
+      "action": "SHOT_FIRED",
+      "data": {
+        "weapon": "pistol",
+        "hit": true
+      }
+    },
+    {
+      "schemaVersion": "1.0",
+      "eventId": "evt-match-combat-001-0027",
+      "timestamp": "2026-10-12T19:00:55.400Z",
+      "gameId": "combat",
+      "gameVersion": "1.0",
+      "matchId": "match-combat-001",
+      "playerId": "player-23",
+      "type": "GAME_ACTION",
+      "action": "DAMAGE_DEALT",
+      "data": {
+        "targetPlayerId": "player-21",
+        "amount": 25,
+        "weapon": "pistol"
+      }
+    },
+    {
+      "schemaVersion": "1.0",
+      "eventId": "evt-match-combat-001-0028",
+      "timestamp": "2026-10-12T19:00:55.800Z",
+      "gameId": "combat",
+      "gameVersion": "1.0",
+      "matchId": "match-combat-001",
+      "playerId": "player-21",
+      "type": "GAME_ACTION",
+      "action": "SHOT_FIRED",
+      "data": {
+        "weapon": "rifle",
+        "hit": true
+      }
+    },
+    {
+      "schemaVersion": "1.0",
+      "eventId": "evt-match-combat-001-0029",
+      "timestamp": "2026-10-12T19:00:56.200Z",
+      "gameId": "combat",
+      "gameVersion": "1.0",
+      "matchId": "match-combat-001",
+      "playerId": "player-21",
+      "type": "GAME_ACTION",
+      "action": "DAMAGE_DEALT",
+      "data": {
+        "targetPlayerId": "player-23",
+        "amount": 100,
+        "weapon": "rifle"
+      }
+    },
+    {
+      "schemaVersion": "1.0",
+      "eventId": "evt-match-combat-001-0030",
+      "timestamp": "2026-10-12T19:00:56.600Z",
+      "gameId": "combat",
+      "gameVersion": "1.0",
+      "matchId": "match-combat-001",
+      "playerId": "player-21",
+      "type": "GAME_ACTION",
+      "action": "ELIMINATION",
+      "data": {
+        "victimPlayerId": "player-23",
+        "weapon": "rifle",
+        "distanceMeters": 8
+      }
+    },
+    {
+      "schemaVersion": "1.0",
+      "eventId": "evt-match-combat-001-0031",
+      "timestamp": "2026-10-12T19:01:05.000Z",
+      "gameId": "combat",
+      "gameVersion": "1.0",
+      "matchId": "match-combat-001",
+      "playerId": "player-21",
+      "type": "GAME_ACTION",
+      "action": "SHOT_FIRED",
+      "data": {
+        "weapon": "pistol",
+        "hit": false
+      }
+    },
+    {
+      "schemaVersion": "1.0",
+      "eventId": "evt-match-combat-001-0032",
+      "timestamp": "2026-10-12T19:01:05.400Z",
+      "gameId": "combat",
+      "gameVersion": "1.0",
+      "matchId": "match-combat-001",
+      "playerId": "player-21",
+      "type": "GAME_ACTION",
+      "action": "SHOT_FIRED",
+      "data": {
+        "weapon": "pistol",
+        "hit": true
+      }
+    },
+    {
+      "schemaVersion": "1.0",
+      "eventId": "evt-match-combat-001-0033",
+      "timestamp": "2026-10-12T19:01:05.800Z",
+      "gameId": "combat",
+      "gameVersion": "1.0",
+      "matchId": "match-combat-001",
+      "playerId": "player-21",
+      "type": "GAME_ACTION",
+      "action": "DAMAGE_DEALT",
+      "data": {
+        "targetPlayerId": "player-22",
+        "amount": 85,
+        "weapon": "pistol"
+      }
+    },
+    {
+      "schemaVersion": "1.0",
+      "eventId": "evt-match-combat-001-0034",
+      "timestamp": "2026-10-12T19:01:06.200Z",
+      "gameId": "combat",
+      "gameVersion": "1.0",
+      "matchId": "match-combat-001",
+      "playerId": "player-21",
+      "type": "GAME_ACTION",
+      "action": "ELIMINATION",
+      "data": {
+        "victimPlayerId": "player-22",
+        "weapon": "pistol",
+        "distanceMeters": 55.25
+      }
+    },
+    {
+      "schemaVersion": "1.0",
+      "eventId": "evt-match-combat-001-0035",
+      "timestamp": "2026-10-12T19:01:15.000Z",
+      "gameId": "combat",
+      "gameVersion": "1.0",
+      "matchId": "match-combat-001",
+      "playerId": "player-23",
+      "type": "GAME_ACTION",
+      "action": "SHOT_FIRED",
+      "data": {
+        "weapon": "pistol",
+        "hit": true
+      }
+    },
+    {
+      "schemaVersion": "1.0",
+      "eventId": "evt-match-combat-001-0036",
+      "timestamp": "2026-10-12T19:01:15.400Z",
+      "gameId": "combat",
+      "gameVersion": "1.0",
+      "matchId": "match-combat-001",
+      "playerId": "player-23",
+      "type": "GAME_ACTION",
+      "action": "DAMAGE_DEALT",
+      "data": {
+        "targetPlayerId": "player-21",
+        "amount": 25,
+        "weapon": "pistol"
+      }
+    },
+    {
+      "schemaVersion": "1.0",
+      "eventId": "evt-match-combat-001-0037",
+      "timestamp": "2026-10-12T19:01:15.800Z",
+      "gameId": "combat",
+      "gameVersion": "1.0",
+      "matchId": "match-combat-001",
+      "playerId": "player-21",
+      "type": "GAME_ACTION",
+      "action": "SHOT_FIRED",
+      "data": {
+        "weapon": "rifle",
+        "hit": true
+      }
+    },
+    {
+      "schemaVersion": "1.0",
+      "eventId": "evt-match-combat-001-0038",
+      "timestamp": "2026-10-12T19:01:16.200Z",
+      "gameId": "combat",
+      "gameVersion": "1.0",
+      "matchId": "match-combat-001",
+      "playerId": "player-21",
+      "type": "GAME_ACTION",
+      "action": "DAMAGE_DEALT",
+      "data": {
+        "targetPlayerId": "player-23",
+        "amount": 70,
+        "weapon": "rifle"
+      }
+    },
+    {
+      "schemaVersion": "1.0",
+      "eventId": "evt-match-combat-001-0039",
+      "timestamp": "2026-10-12T19:01:16.600Z",
+      "gameId": "combat",
+      "gameVersion": "1.0",
+      "matchId": "match-combat-001",
+      "playerId": "player-21",
+      "type": "GAME_ACTION",
+      "action": "ELIMINATION",
+      "data": {
+        "victimPlayerId": "player-23",
+        "weapon": "rifle",
+        "distanceMeters": 3.5
+      }
+    },
+    {
+      "schemaVersion": "1.0",
+      "eventId": "evt-match-combat-001-0040",
+      "timestamp": "2026-10-12T19:01:25.000Z",
+      "gameId": "combat",
+      "gameVersion": "1.0",
+      "matchId": "match-combat-001",
+      "playerId": "player-21",
+      "type": "GAME_ACTION",
+      "action": "SHOT_FIRED",
+      "data": {
+        "weapon": "shotgun",
+        "hit": true
+      }
+    },
+    {
+      "schemaVersion": "1.0",
+      "eventId": "evt-match-combat-001-0041",
+      "timestamp": "2026-10-12T19:01:25.400Z",
+      "gameId": "combat",
+      "gameVersion": "1.0",
+      "matchId": "match-combat-001",
+      "playerId": "player-21",
+      "type": "GAME_ACTION",
+      "action": "DAMAGE_DEALT",
+      "data": {
+        "targetPlayerId": "player-22",
+        "amount": 100,
+        "weapon": "shotgun"
+      }
+    },
+    {
+      "schemaVersion": "1.0",
+      "eventId": "evt-match-combat-001-0042",
+      "timestamp": "2026-10-12T19:01:25.800Z",
+      "gameId": "combat",
+      "gameVersion": "1.0",
+      "matchId": "match-combat-001",
+      "playerId": "player-21",
+      "type": "GAME_ACTION",
+      "action": "ELIMINATION",
+      "data": {
+        "victimPlayerId": "player-22",
+        "weapon": "shotgun",
+        "distanceMeters": 42.5
+      }
+    },
+    {
+      "schemaVersion": "1.0",
+      "eventId": "evt-match-combat-001-0043",
+      "timestamp": "2026-10-12T19:01:35.000Z",
+      "gameId": "combat",
+      "gameVersion": "1.0",
+      "matchId": "match-combat-001",
+      "playerId": "player-21",
+      "type": "GAME_ACTION",
+      "action": "SHOT_FIRED",
+      "data": {
+        "weapon": "rifle",
+        "hit": false
+      }
+    },
+    {
+      "schemaVersion": "1.0",
+      "eventId": "evt-match-combat-001-0044",
+      "timestamp": "2026-10-12T19:01:35.400Z",
+      "gameId": "combat",
+      "gameVersion": "1.0",
+      "matchId": "match-combat-001",
+      "playerId": "player-23",
+      "type": "GAME_ACTION",
+      "action": "SHOT_FIRED",
+      "data": {
+        "weapon": "pistol",
+        "hit": true
+      }
+    },
+    {
+      "schemaVersion": "1.0",
+      "eventId": "evt-match-combat-001-0045",
+      "timestamp": "2026-10-12T19:01:35.800Z",
+      "gameId": "combat",
+      "gameVersion": "1.0",
+      "matchId": "match-combat-001",
+      "playerId": "player-23",
+      "type": "GAME_ACTION",
+      "action": "DAMAGE_DEALT",
+      "data": {
+        "targetPlayerId": "player-21",
+        "amount": 25,
+        "weapon": "pistol"
+      }
+    },
+    {
+      "schemaVersion": "1.0",
+      "eventId": "evt-match-combat-001-0046",
+      "timestamp": "2026-10-12T19:01:36.200Z",
+      "gameId": "combat",
+      "gameVersion": "1.0",
+      "matchId": "match-combat-001",
+      "playerId": "player-21",
+      "type": "GAME_ACTION",
+      "action": "SHOT_FIRED",
+      "data": {
+        "weapon": "rifle",
+        "hit": true
+      }
+    },
+    {
+      "schemaVersion": "1.0",
+      "eventId": "evt-match-combat-001-0047",
+      "timestamp": "2026-10-12T19:01:36.600Z",
+      "gameId": "combat",
+      "gameVersion": "1.0",
+      "matchId": "match-combat-001",
+      "playerId": "player-21",
+      "type": "GAME_ACTION",
+      "action": "DAMAGE_DEALT",
+      "data": {
+        "targetPlayerId": "player-23",
+        "amount": 90,
+        "weapon": "rifle"
+      }
+    },
+    {
+      "schemaVersion": "1.0",
+      "eventId": "evt-match-combat-001-0048",
+      "timestamp": "2026-10-12T19:01:37.000Z",
+      "gameId": "combat",
+      "gameVersion": "1.0",
+      "matchId": "match-combat-001",
+      "playerId": "player-21",
+      "type": "GAME_ACTION",
+      "action": "ELIMINATION",
+      "data": {
+        "victimPlayerId": "player-23",
+        "weapon": "rifle",
+        "distanceMeters": 8
+      }
+    },
+    {
+      "schemaVersion": "1.0",
+      "eventId": "evt-match-combat-001-0049",
+      "timestamp": "2026-10-12T19:01:39.400Z",
+      "gameId": "combat",
+      "gameVersion": "1.0",
+      "matchId": "match-combat-001",
+      "type": "MATCH_FINISHED",
+      "data": {
+        "winnerPlayerId": "player-21",
+        "ranking": [
+          "player-21",
+          "player-22",
+          "player-23"
+        ]
+      }
+    }
+  ]
+}

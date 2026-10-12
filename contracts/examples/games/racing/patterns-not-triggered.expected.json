@@ -1,0 +1,103 @@
+{
+  "matchId": "match-racing-002",
+  "gameId": "racing",
+  "status": "COMPLETED",
+  "durationSeconds": 284.5,
+  "totalEvents": 21,
+  "eventCountsByType": {
+    "GAME_ACTION": 15,
+    "MATCH_FINISHED": 1,
+    "MATCH_STARTED": 1,
+    "PLAYER_JOINED": 4
+  },
+  "eventCountsByAction": {
+    "LAP_COMPLETED": 12,
+    "PIT_STOP": 1,
+    "POSITION_CHANGED": 2
+  },
+  "matchMetrics": {
+    "totalLapsCompleted": 12,
+    "fastestLapMs": 88000,
+    "averageLapMs": 89516.667,
+    "penaltyCount": 0,
+    "pitStopCount": 1,
+    "positionChangesTotal": 2,
+    "leadChanges": 0,
+    "finishedPlayers": 4
+  },
+  "players": [
+    {
+      "playerId": "player-11",
+      "eventCount": 4,
+      "metrics": {
+        "lapsCompleted": 3,
+        "bestLapMs": 88000,
+        "averageLapMs": 88233.333,
+        "lapTimeStdDevMs": 205.48,
+        "topSpeedKmh": 290.8,
+        "penaltySecondsTotal": 0,
+        "pitStopCount": 0,
+        "pitStopTotalMs": 0,
+        "overtakesMade": 0,
+        "effectiveRaceTimeMs": 264700,
+        "finalPosition": 1,
+        "positionsGained": 0
+      }
+    },
+    {
+      "playerId": "player-12",
+      "eventCount": 5,
+      "metrics": {
+        "lapsCompleted": 3,
+        "bestLapMs": 89300,
+        "averageLapMs": 89566.667,
+        "lapTimeStdDevMs": 249.444,
+        "topSpeedKmh": 288,
+        "penaltySecondsTotal": 0,
+        "pitStopCount": 0,
+        "pitStopTotalMs": 0,
+        "overtakesMade": 0,
+        "effectiveRaceTimeMs": 268700,
+        "finalPosition": 3,
+        "positionsGained": -1
+      }
+    },
+    {
+      "playerId": "player-13",
+      "eventCount": 5,
+      "metrics": {
+        "lapsCompleted": 3,
+        "bestLapMs": 89200,
+        "averageLapMs": 89433.333,
+        "lapTimeStdDevMs": 262.467,
+        "topSpeedKmh": 287.9,
+        "penaltySecondsTotal": 0,
+        "pitStopCount": 0,
+        "pitStopTotalMs": 0,
+        "overtakesMade": 1,
+        "effectiveRaceTimeMs": 268300,
+        "finalPosition": 2,
+        "positionsGained": 1
+      }
+    },
+    {
+      "playerId": "player-14",
+      "eventCount": 5,
+      "metrics": {
+        "lapsCompleted": 3,
+        "bestLapMs": 90500,
+        "averageLapMs": 90833.333,
+        "lapTimeStdDevMs": 235.702,
+        "topSpeedKmh": 284.1,
+        "penaltySecondsTotal": 0,
+        "pitStopCount": 1,
+        "pitStopTotalMs": 2600,
+        "overtakesMade": 0,
+        "effectiveRaceTimeMs": 272500,
+        "finalPosition": 4,
+        "positionsGained": 0
+      }
+    }
+  ],
+  "patterns": []
+}
