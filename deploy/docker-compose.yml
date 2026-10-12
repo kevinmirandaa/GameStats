@@ -1,0 +1,51 @@
+name: gamestats
+
+services:
+  analytics-scala:
+    build: ../analytics-scala
+    image: gamestats-analytics:local
+    environment:
+      PORT: "8081"
+    ports:
+      - "8081:8081"
+    restart: unless-stopped
+
+  ingest-go:
+    build: ../ingest-go
+    image: gamestats-ingest:local
+    environment:
+      PORT: "8080"
+      ANALYTICS_URL: http://analytics-scala:8081
+      MATCH_IDLE_TIMEOUT_SECONDS: ${MATCH_IDLE_TIMEOUT_SECONDS:-30}
+      MATCH_FINISH_GRACE_MILLISECONDS: ${MATCH_FINISH_GRACE_MILLISECONDS:-500}
+      REJECTED_EVENTS_PATH: /data/rejected-events.log
+      ANALYTICS_MAX_ATTEMPTS: ${ANALYTICS_MAX_ATTEMPTS:-6}
+      ANALYTICS_INITIAL_BACKOFF_MILLISECONDS: ${ANALYTICS_INITIAL_BACKOFF_MILLISECONDS:-500}
+    ports:
+      - "8080:8080"
+    volumes:
+      - ingest-data:/data
+    depends_on:
+      analytics-scala:
+        condition: service_healthy
+    stop_grace_period: 50s
+    restart: unless-stopped
+
+  simulator:
+    build: ../simulator
+    image: gamestats-simulator:local
+    profiles: ["simulation"]
+    environment:
+      SIMULATOR_TARGET_URL: http://ingest-go:8080
+      SIMULATOR_SCENARIO: ${SIMULATOR_SCENARIO:-mixed-parallel}
+      SIMULATOR_RUN_ID: ${SIMULATOR_RUN_ID:-demo}
+      SIMULATOR_SEED: ${SIMULATOR_SEED:-42}
+      SIMULATOR_MATCHES_PER_GAME: ${SIMULATOR_MATCHES_PER_GAME:-0}
+      SIMULATOR_EVENTS_PER_SECOND: ${SIMULATOR_EVENTS_PER_SECOND:-0}
+    depends_on:
+      ingest-go:
+        condition: service_healthy
+    restart: "no"
+
+volumes:
+  ingest-data:
