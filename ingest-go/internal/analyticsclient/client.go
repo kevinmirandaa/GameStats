@@ -88,7 +88,10 @@ func (client *Client) sendOnce(ctx context.Context, body []byte) error {
 	if response.StatusCode >= 200 && response.StatusCode < 300 {
 		return nil
 	}
-	responseBody, _ := io.ReadAll(io.LimitReader(response.Body, 512))
+	responseBody, readFailure := io.ReadAll(io.LimitReader(response.Body, 512))
+	if readFailure != nil {
+		responseBody = []byte("response body could not be read")
+	}
 	return unsuccessfulResponse{statusCode: response.StatusCode, body: string(responseBody)}
 }
 

@@ -4,6 +4,7 @@ services:
   analytics-scala:
     build: ../analytics-scala
     image: gamestats-analytics:local
+    mem_limit: 1g
     environment:
       PORT: "8081"
     ports:
@@ -13,6 +14,7 @@ services:
   ingest-go:
     build: ../ingest-go
     image: gamestats-ingest:local
+    mem_limit: 1g
     environment:
       PORT: "8080"
       ANALYTICS_URL: http://analytics-scala:8081

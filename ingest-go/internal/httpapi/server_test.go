@@ -95,7 +95,9 @@ func (running *system) post(t *testing.T, path, body string) (int, map[string]an
 	}
 	defer response.Body.Close()
 	var decoded map[string]any
-	_ = json.NewDecoder(response.Body).Decode(&decoded)
+	if err := json.NewDecoder(response.Body).Decode(&decoded); err != nil {
+		t.Fatal(err)
+	}
 	return response.StatusCode, decoded
 }
 
@@ -107,7 +109,9 @@ func (running *system) get(t *testing.T, path string) (int, map[string]any) {
 	}
 	defer response.Body.Close()
 	var decoded map[string]any
-	_ = json.NewDecoder(response.Body).Decode(&decoded)
+	if err := json.NewDecoder(response.Body).Decode(&decoded); err != nil {
+		t.Fatal(err)
+	}
 	return response.StatusCode, decoded
 }
 
