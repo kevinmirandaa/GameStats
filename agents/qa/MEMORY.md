@@ -21,3 +21,6 @@
 - Recalcular patrones por fuerza bruta (rachas con groupby, marcador acumulado) como segunda opinion.
 
 - Validacion de ejemplos con Ajv 8 (2020-12) y ajv-formats instalados fuera del repositorio.
+
+- Fase 02: el eventId se registra como visto antes de encolar; si el encolado falla, el reintento del cliente recibe 409. Vigilar el orden deduplicar y encolar en servicios de ingesta.
+- Al verificar el orden por timestamp, parsear las fechas; comparar texto falla porque las fracciones no tienen ancho fijo.
