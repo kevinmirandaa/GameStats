@@ -9,4 +9,6 @@
 
 ## Aprendizajes
 
-Agregar aqui lo que se descubra durante las fases.
+- Fase 02 cerrada. Actor por partida, cierre con retiro bajo mutex y drenaje del channel, espera corta tras MATCH_FINISHED. Ver D16 a D19.
+- Los timestamps salen en RFC 3339 con fracciones sin ceros finales.
+- El Dockerfile esta pendiente de construir en la fase 06 (Docker Desktop estaba cerrado).

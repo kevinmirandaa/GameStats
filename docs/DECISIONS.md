@@ -97,3 +97,27 @@ Razon: un cero inventado se confunde con un valor real y distorsiona promedios y
 Decision: ante varias opciones validas se elige la mas simple que cumpla el enunciado y funcione. Los umbrales de reglas de la fase 01 se mantienen.
 
 Razon: el plazo es corto y el proyecto se evalua por cumplir los requisitos y por poder justificar cada decision.
+
+## D16 Un actor por partida con cierre sin carreras
+
+Decision: cada partida activa tiene una goroutine con un channel de entrada. El registro cierra la partida retirandola del mapa bajo un mutex y luego drena el channel. Despues del cierre los eventos de esa partida se rechazan con 409.
+
+Razon: los envios al channel ocurren bajo el mismo mutex que el retiro, asi no se pierden eventos ni hay envios a una goroutine terminada. El envio nunca bloquea: si el channel esta lleno se responde 503.
+
+## D17 Espera corta despues de MATCH_FINISHED
+
+Decision: tras MATCH_FINISHED la partida espera `MATCH_FINISH_GRACE_MILLISECONDS` (500 por defecto) antes de cerrarse.
+
+Razon: los eventos pueden llegar desordenados y MATCH_FINISHED puede llegar antes que otros. La espera permite incluirlos sin implementar logica de reordenamiento compleja.
+
+## D18 Deduplicacion global en memoria
+
+Decision: los eventId ya vistos se guardan en un conjunto en memoria durante toda la vida del proceso.
+
+Razon: es lo mas simple que cumple el requisito. Con el volumen del proyecto la memoria es despreciable. Si el volumen creciera se cambia por una ventana de tiempo sin tocar al resto.
+
+## D19 Reintentos hacia Scala
+
+Decision: hasta 5 intentos con espera creciente (200 ms, 400 ms, 800 ms...). Las respuestas 4xx excepto 429 no se reintentan. Si todo falla se registra y se cuenta en `matchesFailed`.
+
+Razon: un 4xx indica datos que Scala no aceptara nunca, reintentar solo desperdicia tiempo.
