@@ -20,3 +20,5 @@
 - Las pruebas leen `../contracts/examples/games/` y corren con `Test / fork` y `baseDirectory` fijos.
 - El Dockerfile esta pendiente de construir en la fase 06 (Docker Desktop estaba cerrado).
 - La fase 04 solo agrega archivos en `analysis/games/` y los registra en `Main`.
+- Fase 04 cerrada. RacingAnalyzer y CombatAnalyzer en `analysis/games/` (metricas, patrones, MatchResult, Statistics). 72 pruebas, las 4 partidas coinciden con los expected.json.
+- Las reglas que dependen del ganador solo se evaluan si el estado es COMPLETED (MatchResult.of).
