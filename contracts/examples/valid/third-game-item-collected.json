@@ -1,0 +1,12 @@
+{
+  "schemaVersion": "1.0",
+  "eventId": "evt-100002",
+  "timestamp": "2026-10-12T20:02:10.000Z",
+  "gameId": "treasure-hunt",
+  "gameVersion": "0.1",
+  "matchId": "match-treasure-hunt-001",
+  "playerId": "player-31",
+  "type": "GAME_ACTION",
+  "action": "ITEM_COLLECTED",
+  "data": { "item": "golden-coin", "value": 50, "zone": "cave" }
+}

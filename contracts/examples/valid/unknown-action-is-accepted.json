@@ -1,0 +1,12 @@
+{
+  "schemaVersion": "1.0",
+  "eventId": "evt-000070",
+  "timestamp": "2026-10-12T19:05:00.000Z",
+  "gameId": "combat",
+  "gameVersion": "2.3",
+  "matchId": "match-combat-004",
+  "playerId": "player-11",
+  "type": "GAME_ACTION",
+  "action": "EMOTE_USED",
+  "data": { "emote": "wave" }
+}

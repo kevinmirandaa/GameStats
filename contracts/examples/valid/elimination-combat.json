@@ -1,0 +1,12 @@
+{
+  "schemaVersion": "1.0",
+  "eventId": "evt-000010",
+  "timestamp": "2026-10-12T19:03:12.480Z",
+  "gameId": "combat",
+  "gameVersion": "2.3",
+  "matchId": "match-combat-004",
+  "playerId": "player-11",
+  "type": "GAME_ACTION",
+  "action": "ELIMINATION",
+  "data": { "victimPlayerId": "player-12", "weapon": "rifle", "distanceMeters": 42.5 }
+}

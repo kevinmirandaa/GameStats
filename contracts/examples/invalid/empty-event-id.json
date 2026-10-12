@@ -1,0 +1,9 @@
+{
+  "schemaVersion": "1.0",
+  "eventId": "",
+  "timestamp": "2026-10-12T18:00:00.000Z",
+  "gameId": "racing",
+  "gameVersion": "1.0",
+  "matchId": "match-racing-001",
+  "type": "MATCH_STARTED"
+}

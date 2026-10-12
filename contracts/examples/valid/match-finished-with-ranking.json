@@ -1,0 +1,10 @@
+{
+  "schemaVersion": "1.0",
+  "eventId": "evt-000050",
+  "timestamp": "2026-10-12T18:09:30.000Z",
+  "gameId": "racing",
+  "gameVersion": "1.0",
+  "matchId": "match-racing-001",
+  "type": "MATCH_FINISHED",
+  "data": { "winnerPlayerId": "player-02", "ranking": ["player-02", "player-01", "player-03"] }
+}
