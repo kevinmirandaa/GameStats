@@ -187,3 +187,15 @@ Razon: el QA mostro que con la ventana por defecto (unos 3 segundos) una caida b
 Decision: el buzon de cada partida abierta en Go pasa de 8192 a 1024 eventos y cada servicio tiene un limite de 1 GB en Compose.
 
 Razon: el QA integral midio que 2000 partidas abiertas a la vez usaban 2.88 GiB. Con 1024 usan unos 450 MB y no se pierde ningun evento en las pruebas de carga. Si un buzon se llena, el evento se rechaza con 503 sin quedar registrado como visto, asi que el cliente puede reenviarlo.
+
+## D31 Despliegue automatico con imagenes publicadas en GHCR
+
+Decision: el entorno es Docker Compose con las imagenes publicadas en GitHub Container Registry. El pipeline de CD publica las imagenes de cada commit de `main` y luego las despliega en un entorno limpio y ejecuta la prueba de humo. No hay un servidor permanente.
+
+Razon: el enunciado pide una version funcional desplegada en un entorno definido por el equipo, no una nube concreta. Esta opcion no necesita cuentas, tarjeta ni secretos, se repite en cada cambio y se puede copiar tal cual a cualquier maquina con Docker. Una direccion publica permanente queda como paso opcional documentado.
+
+## D32 CI separado de CD
+
+Decision: `ci.yml` valida cada Pull Request (formato, analisis estatico, pruebas, estandares, imagenes y prueba de humo) y `cd.yml` solo publica y despliega al unir a `main`.
+
+Razon: los cambios se verifican antes de unirse y solo lo ya verificado se publica. Los permisos de escritura de paquetes solo existen en el trabajo de publicacion.
