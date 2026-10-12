@@ -139,3 +139,27 @@ Razon: versiones estables y compatibles entre si. sbt 2 y Java 25 estaban instal
 Decision: `GET /stats/players/{id}` y `GET /stats/games/{id}` devuelven `aggregates`, un mapa de nombre a numero, con `matchesPlayed`, `wins`, `matchesAnalyzed`, `matchesCompleted`, `mean_`, `min_`, `max_` y `patternCount_`.
 
 Razon: un mapa generico permite que juegos nuevos tengan agregados sin cambiar el modelo ni el nucleo.
+
+## D23 Simulador independiente que solo habla HTTP
+
+Decision: el simulador es un modulo Go aparte que no importa codigo de `ingest-go`. Repite el modelo de evento en su propio paquete.
+
+Razon: asi se comporta como un juego externo real y demuestra que el contrato es suficiente. La pequena duplicacion del modelo es el precio de la independencia.
+
+## D24 Historias de partida garantizadas
+
+Decision: cada partida generada sigue una historia (`Natural`, `Comeback`, `Streak`, `Quiet`) construida para disparar o no disparar las reglas de forma garantizada, en lugar de depender del azar.
+
+Razon: las reglas deben poder demostrarse siempre. Las pruebas verifican las historias con calculos propios sobre 125 combinaciones de semilla y numero de jugadores.
+
+## D25 Entrega separada del contenido
+
+Decision: lo que ocurre con las partidas al enviarse (desorden, duplicados, eventos invalidos, partida sin cierre, desconexion) se aplica despues de generarlas, en el paquete `scenario`.
+
+Razon: cualquier juego nuevo hereda esos casos sin escribir nada. El desorden solo intercambia vecinos para que MATCH_FINISHED no se adelante mas que la espera de cierre de Go (D17).
+
+## D26 Jugadores de un conjunto fijo por juego
+
+Decision: cada juego tiene un conjunto fijo de 12 identificadores de jugador y cada partida toma de 4 a 8 de ellos.
+
+Razon: un mismo jugador aparece en varias partidas, lo que permite demostrar los agregados por jugador entre partidas.
