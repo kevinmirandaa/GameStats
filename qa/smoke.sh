@@ -2,7 +2,9 @@
 set -euo pipefail
 
 repository_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-compose=(docker compose -f "$repository_root/deploy/docker-compose.yml")
+compose_file="${SMOKE_COMPOSE_FILE:-$repository_root/deploy/docker-compose.yml}"
+build_images="${SMOKE_BUILD:-1}"
+compose=(docker compose -f "$compose_file")
 ingest_url="http://localhost:8080"
 analytics_url="http://localhost:8081"
 run_id="smoke-$(date +%s)"
@@ -64,8 +66,12 @@ wait_until() {
   return 0
 }
 
-echo "Levantando el sistema"
-"${compose[@]}" up -d --build --wait
+echo "Levantando el sistema con $compose_file"
+if [ "$build_images" = "1" ]; then
+  "${compose[@]}" up -d --build --wait
+else
+  "${compose[@]}" up -d --wait
+fi
 
 echo "Ejecutando el escenario mixed-parallel"
 SIMULATOR_SCENARIO=mixed-parallel SIMULATOR_RUN_ID="$run_id" "${compose[@]}" --profile simulation run --rm simulator
