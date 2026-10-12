@@ -121,3 +121,21 @@ Razon: es lo mas simple que cumple el requisito. Con el volumen del proyecto la 
 Decision: hasta 5 intentos con espera creciente (200 ms, 400 ms, 800 ms...). Las respuestas 4xx excepto 429 no se reintentan. Si todo falla se registra y se cuenta en `matchesFailed`.
 
 Razon: un 4xx indica datos que Scala no aceptara nunca, reintentar solo desperdicia tiempo.
+
+## D20 winnerPlayerId en el resultado de la partida
+
+Decision: MatchAnalysis incluye `winnerPlayerId` cuando MATCH_FINISHED lo trae, y se omite si no.
+
+Razon: los agregados genericos (victorias por jugador) necesitan saber quien gano sin leer los eventos originales. Es un campo opcional que no rompe a los consumidores existentes.
+
+## D21 Versiones y librerias de Scala
+
+Decision: Scala 3.3.6 LTS, sbt 1.10.11, Java 21, Cask 0.10.2, upickle 4.1.0, munit 1.0.4, empaquetado con sbt-native-packager (`sbt stage`).
+
+Razon: versiones estables y compatibles entre si. sbt 2 y Java 25 estaban instalados en la maquina pero no se usan para compilar.
+
+## D22 Forma de los agregados
+
+Decision: `GET /stats/players/{id}` y `GET /stats/games/{id}` devuelven `aggregates`, un mapa de nombre a numero, con `matchesPlayed`, `wins`, `matchesAnalyzed`, `matchesCompleted`, `mean_`, `min_`, `max_` y `patternCount_`.
+
+Razon: un mapa generico permite que juegos nuevos tengan agregados sin cambiar el modelo ni el nucleo.

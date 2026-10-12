@@ -15,4 +15,8 @@
 
 ## Aprendizajes
 
-Agregar aqui lo que se descubra durante las fases.
+- Fase 03 cerrada. Nucleo generico, decoder, pipeline, agregados, almacenamiento y API con Cask. Ver D20 a D22.
+- Para ejecutar sbt en esta maquina hay que fijar JAVA_HOME a openjdk@21.
+- Las pruebas leen `../contracts/examples/games/` y corren con `Test / fork` y `baseDirectory` fijos.
+- El Dockerfile esta pendiente de construir en la fase 06 (Docker Desktop estaba cerrado).
+- La fase 04 solo agrega archivos en `analysis/games/` y los registra en `Main`.
