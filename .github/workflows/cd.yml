@@ -1,0 +1,83 @@
+name: CD
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: cd-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    name: Publicar ${{ matrix.image }}
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - image: gamestats-ingest
+            context: ingest-go
+          - image: gamestats-analytics
+            context: analytics-scala
+          - image: gamestats-simulator
+            context: simulator
+    steps:
+      - uses: actions/checkout@v4
+      - name: Nombre del registro en minusculas
+        run: echo "REGISTRY_OWNER=${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_ENV"
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          push: true
+          tags: |
+            ghcr.io/${{ env.REGISTRY_OWNER }}/${{ matrix.image }}:${{ github.sha }}
+            ghcr.io/${{ env.REGISTRY_OWNER }}/${{ matrix.image }}:latest
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+          cache-from: type=gha,scope=${{ matrix.image }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.image }}
+
+  deploy:
+    name: Desplegar y verificar
+    needs: publish
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Nombre del registro en minusculas
+        run: echo "GAMESTATS_REGISTRY=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_ENV"
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Desplegar las imagenes publicadas y verificar el sistema
+        env:
+          GAMESTATS_TAG: ${{ github.sha }}
+          SMOKE_COMPOSE_FILE: deploy/docker-compose.published.yml
+          SMOKE_BUILD: "0"
+          KEEP_UP: "1"
+        run: ./qa/smoke.sh
+      - name: Registros de los contenedores
+        if: failure()
+        run: docker compose -f deploy/docker-compose.published.yml --profile simulation logs --no-color
