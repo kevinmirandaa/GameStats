@@ -24,3 +24,5 @@
 
 - Fase 02: el eventId se registra como visto antes de encolar; si el encolado falla, el reintento del cliente recibe 409. Vigilar el orden deduplicar y encolar en servicios de ingesta.
 - Al verificar el orden por timestamp, parsear las fechas; comparar texto falla porque las fracciones no tienen ancho fijo.
+
+- Fase 03: las pruebas comparan el expected.json solo en campos genericos; verificar que cubran todos los campos (ganador incluido) y que los agregados se contrasten con docs/STATS_EXPECTED_RESULTS.md cuando existan analizadores reales.

@@ -136,6 +136,7 @@ MatchAnalysis:
   "matchId": "...",
   "gameId": "...",
   "status": "COMPLETED",
+  "winnerPlayerId": "...",
   "durationSeconds": 0.0,
   "totalEvents": 0,
   "eventCountsByType": { "GAME_ACTION": 0 },
@@ -150,7 +151,9 @@ MatchAnalysis:
 }
 ```
 
-Las metricas son mapas texto a numero para que un juego nuevo agregue metricas sin cambiar el modelo.
+Las metricas son mapas texto a numero para que un juego nuevo agregue metricas sin cambiar el modelo. `winnerPlayerId` es opcional y se omite si la partida no lo declara.
+
+Agregados: `GET /stats/players/{playerId}` devuelve `{playerId, matchIds, aggregates}` y `GET /stats/games/{gameId}` devuelve `{gameId, aggregates}`, donde `aggregates` es un mapa texto a numero (ver `docs/STATS.md`, seccion 1).
 
 ## 7. Responsabilidad de Go
 
