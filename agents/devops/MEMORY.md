@@ -9,4 +9,8 @@
 
 ## Aprendizajes
 
-Agregar aqui lo que se descubra durante las fases.
+- Fase 06 cerrada. Compose con perfil `simulation`, Makefile y `qa/smoke.sh`. Ver D27 y D28.
+- Imagenes: analytics 421 MB, ingest y simulator 21 MB. Arranque en unos 12 segundos.
+- El bash de macOS es 3.2: evitar `case` dentro de `$(...)` y otras sintaxis modernas en scripts.
+- Docker Desktop debe estar abierto para construir; comprobar con `docker info`.
+- El stop_grace_period de ingest-go es 50 s porque entrega las partidas abiertas al apagarse.

@@ -163,3 +163,21 @@ Razon: cualquier juego nuevo hereda esos casos sin escribir nada. El desorden so
 Decision: cada juego tiene un conjunto fijo de 12 identificadores de jugador y cada partida toma de 4 a 8 de ellos.
 
 Razon: un mismo jugador aparece en varias partidas, lo que permite demostrar los agregados por jugador entre partidas.
+
+## D27 Compose con perfil para el simulador
+
+Decision: Compose define tres servicios, pero el simulador esta en el perfil `simulation` y solo corre cuando se pide (`make simulate`). Go espera a que Scala este sano y el simulador a que Go lo este.
+
+Razon: el simulador es una fuente externa que termina, no un servicio permanente. El orden por healthcheck evita errores de arranque.
+
+## D28 Prueba de humo como verificacion de aceptacion
+
+Decision: `qa/smoke.sh` levanta el sistema con Docker, ejecuta dos escenarios y verifica por HTTP resultados concretos. Es lo que ejecutan `make smoke` y, mas adelante, el pipeline de CI.
+
+Razon: demuestra el sistema completo funcionando de punta a punta en un entorno limpio, que es lo que pide el enunciado para la ejecucion integrada.
+
+## D29 Ventana de reintento ampliada en Compose y limites aceptados
+
+Decision: en Compose, Go reintenta el envio a Scala 6 veces desde 500 ms (unos 15 segundos en total), en lugar de los 5 intentos desde 200 ms por defecto. No se agrega cola de reenvio ni persistencia en Scala.
+
+Razon: el QA mostro que con la ventana por defecto (unos 3 segundos) una caida breve de Scala perdia partidas. Una cola persistente y una base de datos exceden lo que pide el enunciado (D09). El limite queda documentado en `deploy/README.md`.
