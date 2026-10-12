@@ -28,6 +28,10 @@ Construir el nucleo generico de `analytics-scala`: dominio, decodificacion, anal
 - `DetectedPattern.details` es `Map[String, Double]`.
 - Los agregados entre partidas son genericos: prefijos `mean_`, `min_`, `max_` sobre las metricas del analisis, sin conocer ningun juego.
 
+## Pendiente de la fase 01
+
+- Calcular y guardar los resultados esperados de `/stats/players/{playerId}` y `/stats/games/{gameId}` a partir de las cuatro partidas de `contracts/examples/games/`, en `docs/STATS_EXPECTED_RESULTS.md`, antes de implementar los agregados. Verificarlos con una segunda implementacion independiente.
+
 ## Criterios de aceptacion
 
 - `sbt test` en verde.

@@ -27,3 +27,7 @@ GameStats, proyecto del curso de Lenguajes de Programacion. Dos modulos independ
 - Al terminar escribe `reports/NN-nombre.md` y muestra el resumen en pantalla.
 - Registra decisiones nuevas en `docs/DECISIONS.md` y aprendizajes utiles en su `MEMORY.md`.
 - Piensa siempre en juegos futuros: nada en Go ni en el nucleo de Scala puede depender de un juego concreto.
+
+## Criterio de decision
+
+Kevin delega las decisiones tecnicas. Ante cualquier duda se elige la opcion mas simple que cumpla el enunciado y que funcione de verdad. No se agrega nada que el enunciado no pida. Toda decision se registra en `docs/DECISIONS.md` con una linea de razon. Si algo parece necesitar complejidad extra, se reporta en lugar de implementarlo.

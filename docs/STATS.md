@@ -20,6 +20,7 @@ Datos de ejemplo: `contracts/examples/games/{juego}/`. Resultados esperados: `do
 - `durationSeconds` es la diferencia entre el timestamp del ultimo y del primer evento de la partida.
 - `eventCount` de un jugador es la cantidad de eventos cuyo `playerId` es ese jugador. Un jugador que solo aparece como victima no suma eventos por serlo.
 - La lista de jugadores de una partida es la union de los `playerId` de los eventos y de los identificadores de jugador mencionados en `data` que el analizador del juego declare como participantes (en combat, `victimPlayerId`). Se ordena por `playerId`.
+- PLAYER_LEFT no modifica ninguna metrica ni regla. El jugador sigue figurando como participante con los eventos que emitio antes de salir.
 - Los patrones se ordenan por la posicion del evento `startEventId` dentro de la partida y, en empate, por nombre.
 - `details` de un patron contiene solo numeros.
 
