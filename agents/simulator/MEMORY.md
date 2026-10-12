@@ -8,4 +8,10 @@
 
 ## Aprendizajes
 
-Agregar aqui lo que se descubra durante las fases.
+- Fase 05 cerrada. Historias Natural, Comeback, Streak y Quiet; entrega aplicada despues de generar. Ver D23 a D26.
+- Las pruebas usan calculos de reglas propios en `internal/testsupport`, independientes de Scala.
+- Los empates de tiempo acumulado se desempatan por orden de parrilla.
+- Para repetir una corrida contra el mismo servidor hay que cambiar `-run-id`.
+- El Dockerfile esta pendiente de construir en la fase 06 (Docker Desktop estaba cerrado).
+- Para reproducir una corrida exacta hay que fijar `-seed`, `-run-id` y `-start-time`. La interfaz se llama `GameMatchGenerator`.
+- En macOS `sed` no soporta `\\b`; usar perl para renombres con limites de palabra, y `find | xargs` en lugar de `grep --include` sin comillas en zsh.
