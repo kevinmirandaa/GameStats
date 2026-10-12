@@ -1,0 +1,11 @@
+{
+  "schemaVersion": "1.0",
+  "eventId": "evt-000002",
+  "timestamp": "2026-10-12T18:00:01.000Z",
+  "gameId": "racing",
+  "gameVersion": "1.0",
+  "matchId": "match-racing-001",
+  "playerId": "player-01",
+  "type": "PLAYER_JOINED",
+  "data": { "displayName": "Kevin", "vehicle": "falcon" }
+}

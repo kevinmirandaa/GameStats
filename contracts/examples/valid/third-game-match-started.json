@@ -1,0 +1,10 @@
+{
+  "schemaVersion": "1.0",
+  "eventId": "evt-100001",
+  "timestamp": "2026-10-12T20:00:00.000Z",
+  "gameId": "treasure-hunt",
+  "gameVersion": "0.1",
+  "matchId": "match-treasure-hunt-001",
+  "type": "MATCH_STARTED",
+  "data": { "mapName": "sunken-island" }
+}

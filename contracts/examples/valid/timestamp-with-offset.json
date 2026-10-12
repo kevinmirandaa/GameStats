@@ -1,0 +1,12 @@
+{
+  "schemaVersion": "1.0",
+  "eventId": "evt-000072",
+  "timestamp": "2026-10-12T13:06:00-06:00",
+  "gameId": "combat",
+  "gameVersion": "2.3",
+  "matchId": "match-combat-004",
+  "playerId": "player-11",
+  "type": "GAME_ACTION",
+  "action": "SHOT_FIRED",
+  "data": { "weapon": "rifle", "hit": true }
+}

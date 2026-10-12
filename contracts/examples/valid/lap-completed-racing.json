@@ -1,0 +1,12 @@
+{
+  "schemaVersion": "1.0",
+  "eventId": "evt-000003",
+  "timestamp": "2026-10-12T18:01:31.250Z",
+  "gameId": "racing",
+  "gameVersion": "1.0",
+  "matchId": "match-racing-001",
+  "playerId": "player-01",
+  "type": "GAME_ACTION",
+  "action": "LAP_COMPLETED",
+  "data": { "lap": 1, "lapTimeMs": 91250, "position": 4, "topSpeedKmh": 287.4 }
+}

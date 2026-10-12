@@ -11,4 +11,6 @@
 
 ## Aprendizajes
 
-Agregar aqui lo que se descubra durante las fases.
+- Fase 00: el esquema valida 12 ejemplos validos y rechaza 17 invalidos con Ajv 8 (2020-12). Para revalidar, instalar `ajv` y `ajv-formats` fuera del proyecto.
+- El esquema no cubre unicidad de eventId ni validez real de fechas sin formatos activados: lo hace Go.
+- `additionalProperties: false` en el sobre: todo campo extra debe ir dentro de `data`.
