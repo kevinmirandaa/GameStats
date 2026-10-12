@@ -22,6 +22,12 @@ Construir el nucleo generico de `analytics-scala`: dominio, decodificacion, anal
 8. Pruebas munit del decodificador, del analisis generico, del registro y de la API.
 9. Dockerfile multi etapa y README corto del modulo.
 
+## Decisiones tomadas en la fase 01
+
+- `GameAnalyzer` incluye una funcion opcional `additionalPlayerIds(events)` con valor por defecto vacio, para que un juego declare participantes que no emiten eventos propios. Combat la usa para las victimas.
+- `DetectedPattern.details` es `Map[String, Double]`.
+- Los agregados entre partidas son genericos: prefijos `mean_`, `min_`, `max_` sobre las metricas del analisis, sin conocer ningun juego.
+
 ## Criterios de aceptacion
 
 - `sbt test` en verde.

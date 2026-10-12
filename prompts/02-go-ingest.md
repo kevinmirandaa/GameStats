@@ -24,6 +24,13 @@ Implementar `ingest-go` completo segun las secciones 5, 6 y 7 del Blueprint.
 10. Pruebas: validacion con todos los ejemplos de `contracts/examples/`, concurrencia con muchas partidas simultaneas bajo `go test -race`, cierre por inactividad, reintentos con un cliente falso, API con httptest.
 11. Dockerfile multi etapa y README corto del modulo.
 
+## Reglas heredadas de las fases 00 y 01
+
+- Validar el timestamp con `time.Parse` en RFC 3339 y normalizarlo a UTC. El esquema solo revisa el formato.
+- La unicidad de eventId la comprueba Go, no el esquema.
+- Todo campo extra del evento debe ir dentro de `data`: el sobre rechaza campos desconocidos.
+- Agregar ejemplos invalidos a `contracts/examples/invalid/`: `data` igual a `null` y fecha sin hora. Verificar que el esquema y Go los rechazan.
+
 ## Criterios de aceptacion
 
 - `go vet ./...`, `gofmt -l .` sin salida y `go test -race ./...` en verde.

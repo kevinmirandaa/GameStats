@@ -11,6 +11,7 @@ claude "Actua como el agente de agents/NOMBRE y ejecuta prompts/ARCHIVO.md"
 ## Orden de fases
 
 | Fase | Agente | Prompt |
+|---|---|---|
 | 00 | architect | prompts/00-foundation.md |
 | 01 | stats-designer | prompts/01-stats-design.md |
 | 02 | go-ingest | prompts/02-go-ingest.md |
