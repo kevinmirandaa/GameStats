@@ -31,3 +31,7 @@ No se modifica `ingest-go` ni el nucleo de Scala.
 - Los nombres de accion usan `UPPER_SNAKE_CASE`. Los de metrica, `camelCase`.
 - `playerId` y `matchId` deben ser unicos globalmente.
 - Un `action` desconocido nunca debe provocar un error: se acepta y se cuenta.
+
+## Participantes que no emiten eventos propios
+
+Si en el juego un jugador puede aparecer solo mencionado dentro de `data` de eventos de otro jugador (por ejemplo la victima de una eliminacion), el analizador del juego declara esos identificadores con `additionalPlayerIds`. Asi el jugador figura en la lista de participantes de la partida. Ver decision D12.

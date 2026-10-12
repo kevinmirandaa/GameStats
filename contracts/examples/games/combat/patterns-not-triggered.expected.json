@@ -1,0 +1,76 @@
+{
+  "matchId": "match-combat-002",
+  "gameId": "combat",
+  "status": "COMPLETED",
+  "durationSeconds": 68.6,
+  "totalEvents": 35,
+  "eventCountsByType": {
+    "GAME_ACTION": 30,
+    "MATCH_FINISHED": 1,
+    "MATCH_STARTED": 1,
+    "PLAYER_JOINED": 3
+  },
+  "eventCountsByAction": {
+    "DAMAGE_DEALT": 10,
+    "ELIMINATION": 7,
+    "SHOT_FIRED": 13
+  },
+  "matchMetrics": {
+    "totalEliminations": 7,
+    "totalDamageDealt": 705,
+    "eliminationsPerMinute": 6.122,
+    "mostEliminationsByOnePlayer": 4,
+    "averageEliminationDistanceMeters": 30.714
+  },
+  "players": [
+    {
+      "playerId": "player-41",
+      "eventCount": 10,
+      "metrics": {
+        "eliminations": 2,
+        "deaths": 2,
+        "killDeathRatio": 1,
+        "damageDealtTotal": 210,
+        "damageDealtAverage": 70,
+        "shotsFired": 4,
+        "shotsHit": 3,
+        "accuracyPercent": 75,
+        "damagePerElimination": 105,
+        "longestEliminationDistanceMeters": 42.5
+      }
+    },
+    {
+      "playerId": "player-42",
+      "eventCount": 15,
+      "metrics": {
+        "eliminations": 4,
+        "deaths": 2,
+        "killDeathRatio": 2,
+        "damageDealtTotal": 355,
+        "damageDealtAverage": 88.75,
+        "shotsFired": 6,
+        "shotsHit": 4,
+        "accuracyPercent": 66.667,
+        "damagePerElimination": 88.75,
+        "longestEliminationDistanceMeters": 55.25
+      }
+    },
+    {
+      "playerId": "player-43",
+      "eventCount": 8,
+      "metrics": {
+        "eliminations": 1,
+        "deaths": 3,
+        "killDeathRatio": 0.333,
+        "damageDealtTotal": 140,
+        "damageDealtAverage": 46.667,
+        "shotsFired": 3,
+        "shotsHit": 3,
+        "accuracyPercent": 100,
+        "damagePerElimination": 140,
+        "longestEliminationDistanceMeters": 42.5
+      }
+    }
+  ],
+  "patterns": []
+}

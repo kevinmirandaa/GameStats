@@ -1,0 +1,103 @@
+{
+  "matchId": "match-combat-001",
+  "gameId": "combat",
+  "status": "COMPLETED",
+  "durationSeconds": 99.4,
+  "totalEvents": 49,
+  "eventCountsByType": {
+    "GAME_ACTION": 44,
+    "MATCH_FINISHED": 1,
+    "MATCH_STARTED": 1,
+    "PLAYER_JOINED": 3
+  },
+  "eventCountsByAction": {
+    "DAMAGE_DEALT": 15,
+    "ELIMINATION": 10,
+    "SHOT_FIRED": 19
+  },
+  "matchMetrics": {
+    "totalEliminations": 10,
+    "totalDamageDealt": 1015,
+    "eliminationsPerMinute": 6.036,
+    "mostEliminationsByOnePlayer": 6,
+    "averageEliminationDistanceMeters": 26.9
+  },
+  "players": [
+    {
+      "playerId": "player-21",
+      "eventCount": 21,
+      "metrics": {
+        "eliminations": 6,
+        "deaths": 2,
+        "killDeathRatio": 3,
+        "damageDealtTotal": 535,
+        "damageDealtAverage": 89.167,
+        "shotsFired": 8,
+        "shotsHit": 6,
+        "accuracyPercent": 75,
+        "damagePerElimination": 89.167,
+        "longestEliminationDistanceMeters": 55.25
+      }
+    },
+    {
+      "playerId": "player-22",
+      "eventCount": 15,
+      "metrics": {
+        "eliminations": 4,
+        "deaths": 3,
+        "killDeathRatio": 1.333,
+        "damageDealtTotal": 355,
+        "damageDealtAverage": 88.75,
+        "shotsFired": 6,
+        "shotsHit": 4,
+        "accuracyPercent": 66.667,
+        "damagePerElimination": 88.75,
+        "longestEliminationDistanceMeters": 55.25
+      }
+    },
+    {
+      "playerId": "player-23",
+      "eventCount": 11,
+      "metrics": {
+        "eliminations": 0,
+        "deaths": 5,
+        "killDeathRatio": 0,
+        "damageDealtTotal": 125,
+        "damageDealtAverage": 25,
+        "shotsFired": 5,
+        "shotsHit": 5,
+        "accuracyPercent": 100
+      }
+    }
+  ],
+  "patterns": [
+    {
+      "name": "KILL_STREAK",
+      "playerId": "player-22",
+      "startEventId": "evt-match-combat-001-0008",
+      "endEventId": "evt-match-combat-001-0022",
+      "details": {
+        "streakLength": 4
+      }
+    },
+    {
+      "name": "SCORE_COMEBACK",
+      "playerId": "player-21",
+      "startEventId": "evt-match-combat-001-0022",
+      "endEventId": "evt-match-combat-001-0049",
+      "details": {
+        "maxDeficit": 4,
+        "finalEliminations": 6
+      }
+    },
+    {
+      "name": "KILL_STREAK",
+      "playerId": "player-21",
+      "startEventId": "evt-match-combat-001-0025",
+      "endEventId": "evt-match-combat-001-0048",
+      "details": {
+        "streakLength": 6
+      }
+    }
+  ]
+}

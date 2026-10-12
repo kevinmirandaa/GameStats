@@ -67,3 +67,33 @@ Razon: el enunciado no exige persistencia. La interfaz permite cambiarla despues
 Decision: Go segun el instalado (1.27), Scala 3.3 LTS, Java 21.
 
 Razon: Java 21 es LTS estable para Scala 3.3. El Java mas reciente instalado en la maquina no se usa para compilar.
+
+## D11 Agregados genericos entre partidas
+
+Decision: los agregados de jugador y de juego se calculan en el nucleo de Scala con los prefijos `mean_`, `min_`, `max_` y `patternCount_` sobre las metricas del analisis, sin conocer el juego.
+
+Razon: un juego nuevo obtiene sus agregados historicos sin cambiar el nucleo.
+
+## D12 Participantes sin eventos propios
+
+Decision: `GameAnalyzer` tiene una funcion opcional `additionalPlayerIds(events)` con valor por defecto vacio. Combat la usa para los jugadores que solo aparecen como `victimPlayerId`.
+
+Razon: la lista de jugadores de una partida debe incluir a quien participa aunque no emita eventos, sin que el nucleo interprete `data`.
+
+## D13 Detalles de patrones numericos
+
+Decision: `details` de un patron es `Map[String, Double]`.
+
+Razon: mantiene el modelo de resultado simple y uniforme para cualquier juego. Los identificadores van en `playerId`, `startEventId` y `endEventId`.
+
+## D14 Metricas no definidas se omiten
+
+Decision: una metrica sin datos suficientes no aparece en el resultado. No se rellena con cero ni con NaN. Los conteos y sumas valen 0.
+
+Razon: un cero inventado se confunde con un valor real y distorsiona promedios y minimos de los agregados.
+
+## D15 Criterio de simplicidad
+
+Decision: ante varias opciones validas se elige la mas simple que cumpla el enunciado y funcione. Los umbrales de reglas de la fase 01 se mantienen.
+
+Razon: el plazo es corto y el proyecto se evalua por cumplir los requisitos y por poder justificar cada decision.

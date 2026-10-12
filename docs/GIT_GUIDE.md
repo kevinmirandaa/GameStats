@@ -12,6 +12,11 @@ Repositorio: https://github.com/kevinmirandaa/GameStats
 
 ## Comandos
 
+- `git init -b main` convierte una carpeta en repositorio con la rama principal `main`. Se usa una sola vez al inicio.
+- `git remote add origin URL` conecta el repositorio local con el de GitHub. Se usa una sola vez.
+- `git branch --show-current` muestra en que rama estas.
+- `git branch -d nombre` borra una rama local ya unida. No es obligatorio.
+- `git merge nombre` une una rama a la actual. En este proyecto el merge se hace con el boton del Pull Request.
 - `git status` muestra que archivos cambiaron y cuales estan preparados. Usalo antes y despues de cada paso.
 - `git add .` prepara todos los cambios para el siguiente commit. `git add ruta/archivo` prepara solo uno.
 - `git commit -m "feat: mensaje"` guarda lo preparado.

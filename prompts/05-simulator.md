@@ -21,6 +21,11 @@ Construir la fuente externa simulada que alimenta a GameStats.
 7. Pruebas de los generadores: respetan el esquema, las reglas se disparan en los escenarios que corresponden y no en los otros, la semilla reproduce.
 8. Dockerfile multi etapa y README corto con ejemplos de uso.
 
+## Restricciones de la fase 01
+
+- La regla `RACE_COMEBACK` exige al menos 4 pilotos. Las partidas de racing de los escenarios `comeback` deben tener 4 o mas.
+- Las posiciones de racing deben ser coherentes con los tiempos acumulados de cada vuelta.
+
 ## Criterios de aceptacion
 
 - `go vet`, `gofmt` y `go test -race` en verde.

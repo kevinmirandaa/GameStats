@@ -1,0 +1,351 @@
+{
+  "schemaVersion": "1.0",
+  "gameId": "racing",
+  "gameVersion": "1.0",
+  "matchId": "match-racing-002",
+  "status": "COMPLETED",
+  "events": [
+    {
+      "schemaVersion": "1.0",
+      "eventId": "evt-match-racing-002-0001",
+      "timestamp": "2026-10-12T18:30:00.000Z",
+      "gameId": "racing",
+      "gameVersion": "1.0",
+      "matchId": "match-racing-002",
+      "type": "MATCH_STARTED",
+      "data": {
+        "track": "suzuka",
+        "totalLaps": 3
+      }
+    },
+    {
+      "schemaVersion": "1.0",
+      "eventId": "evt-match-racing-002-0002",
+      "timestamp": "2026-10-12T18:30:01.000Z",
+      "gameId": "racing",
+      "gameVersion": "1.0",
+      "matchId": "match-racing-002",
+      "playerId": "player-11",
+      "type": "PLAYER_JOINED",
+      "data": {
+        "displayName": "Elena",
+        "vehicle": "falcon",
+        "startPosition": 1
+      }
+    },
+    {
+      "schemaVersion": "1.0",
+      "eventId": "evt-match-racing-002-0003",
+      "timestamp": "2026-10-12T18:30:02.000Z",
+      "gameId": "racing",
+      "gameVersion": "1.0",
+      "matchId": "match-racing-002",
+      "playerId": "player-12",
+      "type": "PLAYER_JOINED",
+      "data": {
+        "displayName": "Felipe",
+        "vehicle": "viper",
+        "startPosition": 2
+      }
+    },
+    {
+      "schemaVersion": "1.0",
+      "eventId": "evt-match-racing-002-0004",
+      "timestamp": "2026-10-12T18:30:03.000Z",
+      "gameId": "racing",
+      "gameVersion": "1.0",
+      "matchId": "match-racing-002",
+      "playerId": "player-13",
+      "type": "PLAYER_JOINED",
+      "data": {
+        "displayName": "Gabriela",
+        "vehicle": "comet",
+        "startPosition": 3
+      }
+    },
+    {
+      "schemaVersion": "1.0",
+      "eventId": "evt-match-racing-002-0005",
+      "timestamp": "2026-10-12T18:30:04.000Z",
+      "gameId": "racing",
+      "gameVersion": "1.0",
+      "matchId": "match-racing-002",
+      "playerId": "player-14",
+      "type": "PLAYER_JOINED",
+      "data": {
+        "displayName": "Hugo",
+        "vehicle": "bolt",
+        "startPosition": 4
+      }
+    },
+    {
+      "schemaVersion": "1.0",
+      "eventId": "evt-match-racing-002-0006",
+      "timestamp": "2026-10-12T18:31:38.000Z",
+      "gameId": "racing",
+      "gameVersion": "1.0",
+      "matchId": "match-racing-002",
+      "playerId": "player-11",
+      "type": "GAME_ACTION",
+      "action": "LAP_COMPLETED",
+      "data": {
+        "lap": 1,
+        "lapTimeMs": 88000,
+        "position": 1,
+        "topSpeedKmh": 290.2
+      }
+    },
+    {
+      "schemaVersion": "1.0",
+      "eventId": "evt-match-racing-002-0007",
+      "timestamp": "2026-10-12T18:31:39.500Z",
+      "gameId": "racing",
+      "gameVersion": "1.0",
+      "matchId": "match-racing-002",
+      "playerId": "player-12",
+      "type": "GAME_ACTION",
+      "action": "LAP_COMPLETED",
+      "data": {
+        "lap": 1,
+        "lapTimeMs": 89500,
+        "position": 2,
+        "topSpeedKmh": 287.1
+      }
+    },
+    {
+      "schemaVersion": "1.0",
+      "eventId": "evt-match-racing-002-0008",
+      "timestamp": "2026-10-12T18:31:39.800Z",
+      "gameId": "racing",
+      "gameVersion": "1.0",
+      "matchId": "match-racing-002",
+      "playerId": "player-13",
+      "type": "GAME_ACTION",
+      "action": "LAP_COMPLETED",
+      "data": {
+        "lap": 1,
+        "lapTimeMs": 89800,
+        "position": 3,
+        "topSpeedKmh": 285
+      }
+    },
+    {
+      "schemaVersion": "1.0",
+      "eventId": "evt-match-racing-002-0009",
+      "timestamp": "2026-10-12T18:31:41.000Z",
+      "gameId": "racing",
+      "gameVersion": "1.0",
+      "matchId": "match-racing-002",
+      "playerId": "player-14",
+      "type": "GAME_ACTION",
+      "action": "LAP_COMPLETED",
+      "data": {
+        "lap": 1,
+        "lapTimeMs": 91000,
+        "position": 4,
+        "topSpeedKmh": 282.4
+      }
+    },
+    {
+      "schemaVersion": "1.0",
+      "eventId": "evt-match-racing-002-0010",
+      "timestamp": "2026-10-12T18:32:44.700Z",
+      "gameId": "racing",
+      "gameVersion": "1.0",
+      "matchId": "match-racing-002",
+      "playerId": "player-14",
+      "type": "GAME_ACTION",
+      "action": "PIT_STOP",
+      "data": {
+        "lap": 2,
+        "durationMs": 2600
+      }
+    },
+    {
+      "schemaVersion": "1.0",
+      "eventId": "evt-match-racing-002-0011",
+      "timestamp": "2026-10-12T18:33:06.500Z",
+      "gameId": "racing",
+      "gameVersion": "1.0",
+      "matchId": "match-racing-002",
+      "playerId": "player-11",
+      "type": "GAME_ACTION",
+      "action": "LAP_COMPLETED",
+      "data": {
+        "lap": 2,
+        "lapTimeMs": 88500,
+        "position": 1,
+        "topSpeedKmh": 289.5
+      }
+    },
+    {
+      "schemaVersion": "1.0",
+      "eventId": "evt-match-racing-002-0012",
+      "timestamp": "2026-10-12T18:33:08.800Z",
+      "gameId": "racing",
+      "gameVersion": "1.0",
+      "matchId": "match-racing-002",
+      "playerId": "player-12",
+      "type": "GAME_ACTION",
+      "action": "LAP_COMPLETED",
+      "data": {
+        "lap": 2,
+        "lapTimeMs": 89300,
+        "position": 2,
+        "topSpeedKmh": 288
+      }
+    },
+    {
+      "schemaVersion": "1.0",
+      "eventId": "evt-match-racing-002-0013",
+      "timestamp": "2026-10-12T18:33:09.000Z",
+      "gameId": "racing",
+      "gameVersion": "1.0",
+      "matchId": "match-racing-002",
+      "playerId": "player-13",
+      "type": "GAME_ACTION",
+      "action": "LAP_COMPLETED",
+      "data": {
+        "lap": 2,
+        "lapTimeMs": 89200,
+        "position": 3,
+        "topSpeedKmh": 286.2
+      }
+    },
+    {
+      "schemaVersion": "1.0",
+      "eventId": "evt-match-racing-002-0014",
+      "timestamp": "2026-10-12T18:33:12.000Z",
+      "gameId": "racing",
+      "gameVersion": "1.0",
+      "matchId": "match-racing-002",
+      "playerId": "player-14",
+      "type": "GAME_ACTION",
+      "action": "LAP_COMPLETED",
+      "data": {
+        "lap": 2,
+        "lapTimeMs": 91000,
+        "position": 4,
+        "topSpeedKmh": 283
+      }
+    },
+    {
+      "schemaVersion": "1.0",
+      "eventId": "evt-match-racing-002-0015",
+      "timestamp": "2026-10-12T18:33:53.650Z",
+      "gameId": "racing",
+      "gameVersion": "1.0",
+      "matchId": "match-racing-002",
+      "playerId": "player-13",
+      "type": "GAME_ACTION",
+      "action": "POSITION_CHANGED",
+      "data": {
+        "lap": 3,
+        "fromPosition": 3,
+        "toPosition": 2
+      }
+    },
+    {
+      "schemaVersion": "1.0",
+      "eventId": "evt-match-racing-002-0016",
+      "timestamp": "2026-10-12T18:33:53.751Z",
+      "gameId": "racing",
+      "gameVersion": "1.0",
+      "matchId": "match-racing-002",
+      "playerId": "player-12",
+      "type": "GAME_ACTION",
+      "action": "POSITION_CHANGED",
+      "data": {
+        "lap": 3,
+        "fromPosition": 2,
+        "toPosition": 3
+      }
+    },
+    {
+      "schemaVersion": "1.0",
+      "eventId": "evt-match-racing-002-0017",
+      "timestamp": "2026-10-12T18:34:34.700Z",
+      "gameId": "racing",
+      "gameVersion": "1.0",
+      "matchId": "match-racing-002",
+      "playerId": "player-11",
+      "type": "GAME_ACTION",
+      "action": "LAP_COMPLETED",
+      "data": {
+        "lap": 3,
+        "lapTimeMs": 88200,
+        "position": 1,
+        "topSpeedKmh": 290.8
+      }
+    },
+    {
+      "schemaVersion": "1.0",
+      "eventId": "evt-match-racing-002-0018",
+      "timestamp": "2026-10-12T18:34:38.300Z",
+      "gameId": "racing",
+      "gameVersion": "1.0",
+      "matchId": "match-racing-002",
+      "playerId": "player-13",
+      "type": "GAME_ACTION",
+      "action": "LAP_COMPLETED",
+      "data": {
+        "lap": 3,
+        "lapTimeMs": 89300,
+        "position": 2,
+        "topSpeedKmh": 287.9
+      }
+    },
+    {
+      "schemaVersion": "1.0",
+      "eventId": "evt-match-racing-002-0019",
+      "timestamp": "2026-10-12T18:34:38.700Z",
+      "gameId": "racing",
+      "gameVersion": "1.0",
+      "matchId": "match-racing-002",
+      "playerId": "player-12",
+      "type": "GAME_ACTION",
+      "action": "LAP_COMPLETED",
+      "data": {
+        "lap": 3,
+        "lapTimeMs": 89900,
+        "position": 3,
+        "topSpeedKmh": 286.4
+      }
+    },
+    {
+      "schemaVersion": "1.0",
+      "eventId": "evt-match-racing-002-0020",
+      "timestamp": "2026-10-12T18:34:42.500Z",
+      "gameId": "racing",
+      "gameVersion": "1.0",
+      "matchId": "match-racing-002",
+      "playerId": "player-14",
+      "type": "GAME_ACTION",
+      "action": "LAP_COMPLETED",
+      "data": {
+        "lap": 3,
+        "lapTimeMs": 90500,
+        "position": 4,
+        "topSpeedKmh": 284.1
+      }
+    },
+    {
+      "schemaVersion": "1.0",
+      "eventId": "evt-match-racing-002-0021",
+      "timestamp": "2026-10-12T18:34:44.500Z",
+      "gameId": "racing",
+      "gameVersion": "1.0",
+      "matchId": "match-racing-002",
+      "type": "MATCH_FINISHED",
+      "data": {
+        "winnerPlayerId": "player-11",
+        "ranking": [
+          "player-11",
+          "player-13",
+          "player-12",
+          "player-14"
+        ]
+      }
+    }
+  ]
+}
