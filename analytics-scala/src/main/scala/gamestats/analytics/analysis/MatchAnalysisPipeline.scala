@@ -1,12 +1,8 @@
 package gamestats.analytics.analysis
 
-import java.time.Duration
-
 import gamestats.analytics.domain.*
 
 object MatchAnalysisPipeline:
-
-  private val millisecondsPerSecond = 1000.0
 
   def analyze(batch: MatchBatch, registry: GameAnalyzerRegistry): MatchAnalysis =
     val orderedEvents = batch.events.sortBy(_.timestamp)
@@ -20,7 +16,7 @@ object MatchAnalysisPipeline:
       gameId = batch.gameId,
       status = batch.status,
       winnerPlayerId = winnerOf(orderedEvents),
-      durationSeconds = durationSecondsOf(orderedEvents),
+      durationSeconds = MatchDuration.secondsOf(orderedEvents),
       totalEvents = orderedEvents.size,
       eventCountsByType = countBy(orderedEvents.map(_.eventType.wireName)),
       eventCountsByAction = countBy(orderedEvents.flatMap(_.action)),
@@ -31,11 +27,6 @@ object MatchAnalysisPipeline:
 
   private def winnerOf(events: List[Event]): Option[String] =
     events.findLast(_.eventType == EventType.MatchFinished).flatMap(_.data.text("winnerPlayerId"))
-
-  private def durationSecondsOf(events: List[Event]): Double =
-    (events.headOption, events.lastOption) match
-      case (Some(first), Some(last)) => Duration.between(first.timestamp, last.timestamp).toMillis / millisecondsPerSecond
-      case _                         => 0.0
 
   private def countBy(names: List[String]): Map[String, Int] =
     names.groupMapReduce(identity)(_ => 1)(_ + _)
