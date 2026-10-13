@@ -9,9 +9,9 @@ const [blocksPath, imagesDirectory, outputPath, professor] = process.argv.slice(
 const blocks = JSON.parse(fs.readFileSync(blocksPath, "utf8"));
 
 const FONT = "Arial";
-const BODY_SIZE = 22;
-const TABLE_SIZE = 20;
-const CAPTION_SIZE = 20;
+const BODY_SIZE = 24;
+const TABLE_SIZE = 24;
+const CAPTION_SIZE = 24;
 const CONTENT_WIDTH = 9360;
 const PIXELS_PER_POINT = 96 / 72;
 
@@ -229,7 +229,7 @@ const document = new Document({
     paragraphStyles: [
       headingStyle("Heading1", "Heading 1", 28, 400, 0),
       headingStyle("Heading2", "Heading 2", 24, 280, 1),
-      headingStyle("Heading3", "Heading 3", 22, 200, 2),
+      headingStyle("Heading3", "Heading 3", 24, 200, 2),
     ],
   },
   numbering: {
@@ -252,8 +252,8 @@ const document = new Document({
     footers: {
       default: new Footer({
         children: [new Paragraph({
-          alignment: AlignmentType.CENTER,
-          children: [new TextRun({ children: [PageNumber.CURRENT], font: FONT, size: 20 })],
+          alignment: AlignmentType.RIGHT,
+          children: [new TextRun({ children: [PageNumber.CURRENT], font: FONT, size: 24 })],
         })],
       }),
       first: new Footer({ children: [new Paragraph({ children: [] })] }),

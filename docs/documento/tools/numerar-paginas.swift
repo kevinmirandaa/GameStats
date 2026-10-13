@@ -7,7 +7,7 @@ var mediaBox = CGRect(x: 0, y: 0, width: 612, height: 792)
 guard let context = CGContext(URL(fileURLWithPath: arguments[2]) as CFURL, mediaBox: &mediaBox, nil) else { exit(1) }
 
 let attributes: [NSAttributedString.Key: Any] = [
-    .font: NSFont(name: "Helvetica", size: 10) ?? NSFont.systemFont(ofSize: 10),
+    .font: NSFont(name: "Arial", size: 12) ?? NSFont.systemFont(ofSize: 12),
     .foregroundColor: NSColor.black
 ]
 
@@ -20,7 +20,7 @@ for index in 0..<source.pageCount {
         let width = label.size().width
         NSGraphicsContext.saveGraphicsState()
         NSGraphicsContext.current = NSGraphicsContext(cgContext: context, flipped: false)
-        label.draw(at: NSPoint(x: (612 - width) / 2, y: 36))
+        label.draw(at: NSPoint(x: 540 - width, y: 36))
         NSGraphicsContext.restoreGraphicsState()
     }
     context.endPDFPage()
