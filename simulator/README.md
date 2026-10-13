@@ -42,6 +42,7 @@ go run ./cmd/simulator -scenario normal -events-per-second 20
 | -batch-size | SIMULATOR_BATCH_SIZE | 25 |
 | -parallel | SIMULATOR_PARALLEL | 16 |
 | -start-time | SIMULATOR_START_TIME | ahora (RFC 3339) |
+| -output-directory | SIMULATOR_OUTPUT_DIRECTORY | vacio (envia por HTTP) |
 | -wait-seconds | SIMULATOR_WAIT_SECONDS | 30 |
 
 Con `-events-per-second` mayor que cero cada evento se envia con `POST /events` al ritmo indicado (tiempo real simulado). Con cero se usa `POST /events/batch` en bloques (volcado rapido).
@@ -49,6 +50,14 @@ Con `-events-per-second` mayor que cero cada evento se envia con `POST /events` 
 La misma semilla genera las mismas partidas. Para que ademas los timestamps sean identicos hay que fijar tambien `-start-time`. El `-run-id` va dentro de los identificadores de partida, asi que repetir la simulacion con el mismo servidor no choca con partidas ya cerradas.
 
 Al terminar imprime `matches=... sent=... accepted=... rejected=... failed=...` y sale con codigo distinto de cero si algun evento no pudo entregarse. Los rechazos esperados (duplicados y eventos invalidos) no cuentan como fallo.
+
+## Modo carpeta
+
+Con `-output-directory` el simulador no envia peticiones HTTP: escribe un archivo `<partida>.jsonl` por partida, con un evento por linea, como lo haria un juego que deja sus eventos en disco. Si ademas se indica `-events-per-second`, las lineas se van agregando al archivo mientras la partida "ocurre", y el vigilante de carpeta de `ingest-go` las lee a medida que aparecen.
+
+```bash
+go run ./cmd/simulator -scenario mixed-parallel -output-directory ../inbox -events-per-second 50
+```
 
 ## Agregar un juego
 

@@ -47,6 +47,14 @@ class AnalyticsApiSpec extends munit.FunSuite:
       {"eventId":"$matchId-1","timestamp":"2026-10-12T18:00:00Z","gameId":"toy","gameVersion":"1.0","matchId":"$matchId","playerId":"$scorer","type":"GAME_ACTION","action":"SCORE","data":{"points":$points}},
       {"eventId":"$matchId-2","timestamp":"2026-10-12T18:00:30Z","gameId":"toy","gameVersion":"1.0","matchId":"$matchId","type":"MATCH_FINISHED","data":{"winnerPlayerId":"$winner"}}]}"""
 
+  test("the root path serves the web dashboard") {
+    val response = client.send(HttpRequest.newBuilder(URI.create(baseUrl + "/")).GET().build(), HttpResponse.BodyHandlers.ofString())
+    assertEquals(response.statusCode, 200)
+    assert(response.headers().firstValue("Content-Type").orElse("").startsWith("text/html"))
+    assert(response.body().contains("GameStats"))
+    assert(response.body().contains("/stats/matches"))
+  }
+
   test("health answers UP") {
     val answer = get("/health")
     assertEquals(answer.status, 200)

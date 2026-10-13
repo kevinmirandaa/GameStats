@@ -6,12 +6,16 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"path/filepath"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"testing"
 	"time"
 
 	"gamestats/simulator/internal/event"
+	"gamestats/simulator/internal/filedrop"
 	"gamestats/simulator/internal/games"
 	"gamestats/simulator/internal/runner"
 	"gamestats/simulator/internal/scenario"
@@ -163,5 +167,37 @@ func TestEveryMatchUsesPlayersFromTheGamePoolOnly(t *testing.T) {
 		if received.PlayerId != "" && !pools[received.GameId][received.PlayerId] {
 			t.Fatalf("player %s does not belong to the %s pool", received.PlayerId, received.GameId)
 		}
+	}
+}
+
+func TestTheWholeScenarioCanBeWrittenAsFilesInsteadOfSentOverHttp(t *testing.T) {
+	directory := t.TempDir()
+	writer, err := filedrop.New(directory)
+	if err != nil {
+		t.Fatal(err)
+	}
+	mixed, _ := scenario.Find("mixed-parallel")
+
+	summary := runner.Run(context.Background(), settings(8), games.All(), mixed, writer)
+
+	files, err := os.ReadDir(directory)
+	if err != nil || len(files) != 24 || summary.Failed != 0 {
+		t.Fatalf("expected 24 files and no failures but got %d files, summary %+v (%v)", len(files), summary, err)
+	}
+	totalLines := 0
+	for _, file := range files {
+		content, err := os.ReadFile(filepath.Join(directory, file.Name()))
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, line := range strings.Split(strings.TrimSpace(string(content)), "\n") {
+			if !json.Valid([]byte(line)) {
+				t.Fatalf("%s contains a line that is not JSON: %s", file.Name(), line)
+			}
+			totalLines++
+		}
+	}
+	if int64(totalLines) != summary.Sent {
+		t.Fatalf("%d lines were written but %d were reported as sent", totalLines, summary.Sent)
 	}
 }

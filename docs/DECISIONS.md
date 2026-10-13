@@ -199,3 +199,45 @@ Razon: el enunciado pide una version funcional desplegada en un entorno definido
 Decision: `ci.yml` valida cada Pull Request (formato, analisis estatico, pruebas, estandares, imagenes y prueba de humo) y `cd.yml` solo publica y despliega al unir a `main`.
 
 Razon: los cambios se verifican antes de unirse y solo lo ya verificado se publica. Los permisos de escritura de paquetes solo existen en el trabajo de publicacion.
+
+## D33 Panel web de resultados servido por Scala
+
+Decision: el modulo Scala sirve en `GET /` una pagina HTML unica, con JavaScript sin librerias, que consulta la API existente y muestra partidas, metricas, patrones y agregados.
+
+Razon: el enunciado pide consultar o presentar los resultados. La API en JSON cumple "consultar", pero un panel visual hace la demostracion y la verificacion mucho mas faciles. No agrega logica ni dependencias: usa los mismos endpoints, y el panel y `curl` siempre muestran los mismos numeros.
+
+## D34 Entrada por carpeta de archivos ademas de HTTP
+
+Decision: `ingest-go` puede vigilar una carpeta (`INBOX_DIRECTORY`) donde cualquier fuente deja archivos `.jsonl` o `.json` con eventos. Los archivos pasan por el mismo servicio de ingesta que las peticiones HTTP: misma validacion, deduplicacion y agrupacion por partida.
+
+Razon: el enunciado permite que los eventos lleguen "desde archivos, una API REST, un flujo de mensajes u otro mecanismo", y describe a Go como el modulo que lee, identifica y organiza los datos de fuentes que se actualizan constantemente. Aceptar ambos mecanismos cubre los dos escenarios sin duplicar logica.
+
+## D35 Lectura de archivos que crecen y de archivos a medio escribir
+
+Decision: un `.jsonl` se lee como un registro que crece (solo lineas completas, con un desplazamiento por archivo). Un `.json` se lee cuando su tamano y fecha no cambian entre dos revisiones y despues se mueve a `processed/`, o a `failed/` si no es valido.
+
+Razon: una fuente real puede estar escribiendo el archivo mientras Go lo mira. Esperar a que sea estable evita leer eventos cortados, y mover los archivos evita procesarlos dos veces.
+
+## D36 La carpeta de entrada es un volumen de Docker
+
+Decision: por defecto `/inbox` es un volumen compartido entre `ingest-go` y el simulador. Los archivos se dejan con `make inbox-add` o `docker compose cp`. Un archivo adicional (`docker-compose.inbox-folder.yml`) permite usar una carpeta real del computador.
+
+Razon: en macOS, Docker Desktop no puede montar carpetas como Descargas, Escritorio o Documentos sin un permiso especial del sistema, y la prueba lo confirmo con un error. Un volumen funciona igual en cualquier maquina, incluida la de un tercero sin configuracion previa.
+
+## D37 Resultados guardados en archivos JSON
+
+Decision: Scala guarda cada analisis como un archivo JSON en `RESULTS_DIRECTORY` (un volumen en Docker) y los recarga al arrancar. La escritura es atomica (archivo temporal y renombrado) y un archivo danado se ignora y se reporta sin impedir el arranque. Sin esa variable se usa el almacen en memoria.
+
+Razon: el enunciado pide resultados "consultados o almacenados", y el profesor habla de historial y de que las estadisticas "tienen que escribirse en algun lado". El almacen ya estaba detras de una interfaz (D09), asi que no cambia el resto del codigo. Una base de datos sigue sin ser necesaria.
+
+## D38 Instaladores que solo requieren Docker
+
+Decision: `instalar.sh` e `instalar.bat` comprueban Docker, construyen y levantan el sistema y abren el panel. `detener.sh` y `detener.bat` lo apagan conservando los resultados, o borrandolos con `--borrar-datos`.
+
+Razon: el profesor pidio una instalacion sencilla en una maquina que puede no tener nada instalado, sin abrir un proyecto en un editor. La compilacion ocurre dentro de Docker al instalar, asi que no hacen falta Go, Scala ni Java en la maquina.
+
+## D39 Conteo de eventos aceptados por juego
+
+Decision: `/metrics` de Go informa `eventsAcceptedByGame`.
+
+Razon: el enunciado menciona clasificar los eventos "por partida o juego". Go agrupa por partida y ahora tambien lleva la cuenta por juego, sin interpretar el contenido.

@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>GameStats</title>
+<style>
+* { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+body { font-family: Arial, Helvetica, sans-serif; font-size: 11pt; line-height: 1.38; color: #000; margin: 0; }
+p { margin: 0 0 7pt; text-align: justify; }
+h1 { font-size: 14pt; margin: 20pt 0 7pt; page-break-after: avoid; }
+h2 { font-size: 11.5pt; margin: 14pt 0 5pt; page-break-after: avoid; }
+h3 { font-size: 10.5pt; margin: 10pt 0 4pt; page-break-after: avoid; }
+ul, ol { margin: 0 0 7pt; padding-left: 19pt; }
+li { margin-bottom: 2.5pt; text-align: justify; }
+table { border-collapse: collapse; width: 100%; font-size: 10pt; line-height: 1.3; margin: 3pt 0 9pt; }
+th { background: #e8e8e8; text-align: left; font-weight: bold; }
+th, td { border: 1px solid #999; padding: 3pt 5pt; vertical-align: top; }
+tr { page-break-inside: avoid; }
+.keep { page-break-inside: avoid; break-inside: avoid; }
+.code { font-family: Arial, Helvetica, sans-serif; font-size: 11pt; line-height: 1.3; background: #fff; border: 1px solid #555; padding: 5pt 8pt; white-space: pre-wrap; margin: 3pt 0 9pt; page-break-inside: avoid; text-align: left; }
+.cap { font-size: 10pt; color: #333; margin: -4pt 0 9pt; text-align: left; }
+.pb { page-break-before: always; }
+.fig { text-align: center; margin: 6pt 0 8pt; page-break-inside: avoid; }
+.cover { text-align: center; }
+.cover img { width: 270pt; margin: 62pt 0 46pt; }
+.cover p { text-align: center; font-weight: bold; font-size: 11.5pt; line-height: 1.5; margin: 0 0 30pt; }
+.mono { font-family: inherit; font-size: inherit; }
+</style>
+</head>
+<body>
+
+<div class="cover">
+<img src="tec-logo.png" alt="TEC Tecnológico de Costa Rica">
+<p>Instituto Tecnológico de Costa Rica</p>
+<p>Escuela de Ingeniería en Computación<br>Lenguajes de Programación</p>
+<p style="margin-top:48pt">Proyecto: dos paradigmas de programación en un sistema integrado<br>GameStats, plataforma de procesamiento y análisis de eventos de videojuegos</p>
+<p style="margin-top:44pt">Estudiante:<br>Kevin Miranda Méndez<br>Carné 2024120764</p>
+<p style="margin-top:44pt">Profesor:<br>__PROFESOR__</p>
+<p style="margin-top:34pt">II Semestre 2026</p>
+</div>
+
+<div class="pb"></div>
+
+<h1 style="margin-top:0">1. Introducción</h1>
+<p>Este documento presenta el diseño, la construcción y la verificación de GameStats, el proyecto del curso de Lenguajes de Programación. GameStats es una plataforma que recibe los eventos que genera un videojuego durante una partida, los valida y organiza, y los convierte en estadísticas y en situaciones detectadas, por ejemplo una remontada o una racha de eliminaciones.</p>
+<p>El proyecto exige repartir el trabajo entre dos paradigmas. Go, imperativo, se encarga de la ingestión, el control del flujo, el estado de las partidas y la concurrencia. Scala, funcional, se encarga de transformar colecciones de eventos en información: métricas, patrones y resultados en JSON. Los dos módulos son programas independientes que se comunican por HTTP con un formato definido.</p>
+<p>Los videojuegos no forman parte del alcance. Construí un simulador que hace de fuente externa de eventos y diseñé dos juegos de referencia, carreras (racing) y combate (combat), con sus eventos, estadísticas y reglas. El diseño es genérico: un juego nuevo, escrito en cualquier lenguaje, se conecta enviando eventos con el mismo formato.</p>
+<p style="text-align:left">El documento explica los tipos de juegos considerados y su justificación, el formato de eventos, la arquitectura, cada módulo, las estadísticas y reglas, la simulación de datos, el versionamiento y despliegue, cómo instalar y ejecutar el sistema, los resultados de las pruebas, la comparación entre el enfoque imperativo y el funcional, y el cumplimiento de cada punto del enunciado. El código completo está en el repositorio <span class="mono">https://github.com/kevinmirandaa/GameStats</span>, con su historial de desarrollo.</p>
+
+<h1>2. Proyecto escogido y objetivo</h1>
+<p><b>Problema.</b> Un sistema de videojuegos genera continuamente información sobre lo que ocurre en sus partidas: jugadores que entran, vueltas completadas, eliminaciones, penalizaciones, desconexiones. Contar esos eventos no basta. Para obtener información útil hay que reconstruir la partida, agrupar por jugador, calcular métricas y detectar secuencias de eventos relacionados entre sí.</p>
+<p><b>Objetivo de diseño.</b> Separar la generación de eventos de su análisis, de modo que el análisis no dependa de un juego en particular. Esto obliga a que el contrato de entrada sea claro y estable, y a que lo específico de cada juego quede aislado en un solo lugar.</p>
+<p><b>Datos que maneja.</b> Eventos con identificador, instante, juego y versión, partida, jugador, tipo, acción y datos propios del juego. A partir de ellos produce análisis por partida, por jugador, por juego, y patrones detectados, todo consultable en formato JSON y en un panel web.</p>
+<p><b>Lo que GameStats no es.</b> No implementa videojuegos, ni motor gráfico, ni interfaz de juego. Tampoco usa brokers de mensajes ni bases de datos externas, porque el enunciado no los exige y habrían añadido complejidad sin aportar a lo que el proyecto evalúa.</p>
+
+<h1>3. Tipos de juegos considerados y justificación</h1>
+<p>El enunciado menciona seis tipos de juegos como ejemplos. Antes de escoger, analicé qué eventos produce cada uno, qué estadísticas permite y qué secuencias interesantes se pueden detectar.</p>
+<table>
+<tr><th style="width:15%">Tipo</th><th style="width:30%">Eventos naturales</th><th style="width:30%">Estadísticas y secuencias</th><th>Decisión</th></tr>
+<tr><td>Carreras</td><td>Vuelta completada, cambio de posición, penalización, parada en boxes</td><td>Mejor vuelta, consistencia, tiempo efectivo. Secuencias: mejora vuelta a vuelta, remontada</td><td>Escogido: datos numéricos continuos</td></tr>
+<tr><td>Combate</td><td>Disparo, daño, eliminación</td><td>Eliminaciones, K/D, precisión. Secuencias: racha de eliminaciones, remontada por marcador</td><td>Escogido: eventos discretos entre jugadores</td></tr>
+<tr><td>Ajedrez</td><td>Movimiento, captura, jaque</td><td>Tiempo por movimiento, capturas, duración</td><td>No escogido: es un caso de turnos, parecido a combate en forma</td></tr>
+<tr><td>Deportes</td><td>Pase, gol, falta</td><td>Efectividad, asistencias. Secuencia: cadena de pases</td><td>No escogido: exige simular posesión y equipos</td></tr>
+<tr><td>Cartas</td><td>Carta jugada, recurso gastado</td><td>Cartas usadas, efectividad, recursos</td><td>No escogido: exige un modelo de reglas del juego</td></tr>
+<tr><td>Estrategia</td><td>Recurso recolectado, edificio terminado, objetivo cumplido</td><td>Eficiencia de recursos, ritmo de expansión</td><td>Propuesto como tercer dominio, no implementado</td></tr>
+</table>
+<p><b>Por qué carreras y combate.</b> Producen datos de forma muy distinta, y eso sirve para demostrar que la arquitectura es genérica. Carreras genera series numéricas continuas (tiempos de vuelta, posiciones) donde importan la evolución y la consistencia. Combate genera eventos puntuales entre dos jugadores (quién elimina a quién) de los que se derivan marcador, relaciones y rachas. Ambos tienen secuencias claras y verificables, y ambos se pueden simular con datos coherentes y reproducibles. Con dos dominios diferentes se comprueba que el núcleo no depende de ninguno.</p>
+<p><b>Un tercer dominio sin cambiar el núcleo.</b> Para probar la genericidad, el sistema se verificó además con un juego ficticio de caza de tesoros y con un ajedrez inventado durante las pruebas, sin modificar código. Solo se envían eventos con el mismo sobre y el sistema los acepta, los agrupa por partida y produce el análisis genérico.</p>
+
+<h1>4. Formato de eventos</h1>
+<p>Un evento representa un hecho ocurrido dentro de una partida. Todos los eventos comparten un sobre común, y la información específica de cada juego va dentro de un campo libre. El contrato está formalizado con un esquema JSON (<span class="mono">contracts/event.schema.json</span>) y con documentos por juego (<span class="mono">contracts/games/</span>).</p>
+<h2>4.1 Sobre común (versión 1.0)</h2>
+<table>
+<tr><th style="width:19%">Campo</th><th style="width:13%">Obligatorio</th><th>Descripción</th></tr>
+<tr><td class="mono">schemaVersion</td><td>Sí</td><td>Versión del contrato. Hoy "1.0". Permite evolucionar el formato sin romper a los productores.</td></tr>
+<tr><td class="mono">eventId</td><td>Sí</td><td>Identificador único del evento. Go lo usa para descartar duplicados.</td></tr>
+<tr><td class="mono">timestamp</td><td>Sí</td><td>Instante del hecho, en RFC 3339. Go lo normaliza a UTC.</td></tr>
+<tr><td class="mono">gameId, gameVersion</td><td>Sí</td><td>Juego que produjo el evento y su versión, por ejemplo "racing" y "1.0".</td></tr>
+<tr><td class="mono">matchId</td><td>Sí</td><td>Partida a la que pertenece. Es la clave con la que Go agrupa.</td></tr>
+<tr><td class="mono">playerId</td><td>Según tipo</td><td>Jugador asociado. Obligatorio en PLAYER_JOINED, PLAYER_LEFT y GAME_ACTION.</td></tr>
+<tr><td class="mono">type</td><td>Sí</td><td>Uno de cinco tipos genéricos: MATCH_STARTED, MATCH_FINISHED, PLAYER_JOINED, PLAYER_LEFT, GAME_ACTION.</td></tr>
+<tr><td class="mono">action</td><td>En GAME_ACTION</td><td>Acción específica del juego. Es un texto abierto: cada juego define las suyas.</td></tr>
+<tr><td class="mono">data</td><td>No</td><td>Objeto libre con la información propia de la acción. Go nunca interpreta su contenido.</td></tr>
+</table>
+<h2>4.2 Ejemplo</h2>
+<div class="code">{
+  "schemaVersion": "1.0",
+  "eventId": "evt-000123",
+  "timestamp": "2026-10-12T18:20:15.250Z",
+  "gameId": "racing",
+  "gameVersion": "1.0",
+  "matchId": "match-racing-007",
+  "playerId": "driver-03",
+  "type": "GAME_ACTION",
+  "action": "LAP_COMPLETED",
+  "data": { "lap": 2, "lapTimeMs": 91250, "position": 4, "topSpeedKmh": 287.4 }
+}</div>
+<h2>4.3 Reglas de validación</h2>
+<p>Go valida únicamente el sobre. Si un evento tiene varios problemas, devuelve todos los motivos a la vez, no solo el primero. Las reglas son:</p>
+<ul>
+<li>El cuerpo debe ser un objeto JSON válido, y no puede traer campos desconocidos: todo campo extra va dentro de <span class="mono">data</span>.</li>
+<li>Los campos obligatorios deben ser texto no vacío, y <span class="mono">schemaVersion</span> debe ser "1.0".</li>
+<li>El <span class="mono">timestamp</span> debe ser una fecha y hora RFC 3339 completa. Una fecha sin hora se rechaza.</li>
+<li>El <span class="mono">type</span> debe ser uno de los cinco tipos conocidos. El jugador es obligatorio para PLAYER_JOINED, PLAYER_LEFT y GAME_ACTION, y la acción para GAME_ACTION.</li>
+<li><span class="mono">data</span>, si viene, debe ser un objeto (null o texto se rechazan).</li>
+<li>Un <span class="mono">eventId</span> repetido se rechaza como duplicado.</li>
+</ul>
+<p>Los eventos inválidos no se pierden en silencio: se rechazan con respuesta HTTP 400 y los motivos, se cuentan en las métricas y se guardan en un registro consultable. Se verificó contra 12 ejemplos válidos y 19 inválidos incluidos en el repositorio.</p>
+<h2>4.4 Genericidad y evolución</h2>
+<ul>
+<li>El valor de <span class="mono">action</span> y el contenido de <span class="mono">data</span> son responsabilidad del juego. Una acción desconocida se acepta y se cuenta en las estadísticas genéricas.</li>
+<li>Agregar un juego no requiere cambiar Go. En Scala solo hace falta un analizador si se quieren estadísticas propias del juego.</li>
+<li>El campo <span class="mono">schemaVersion</span> permite introducir una versión 2.0 en el futuro conviviendo con la actual.</li>
+</ul>
+<h2>4.5 Eventos de cada juego</h2>
+<table>
+<tr><th style="width:12%">Juego</th><th style="width:22%">Acción</th><th style="width:24%">Quién es playerId</th><th>Campos de data</th></tr>
+<tr><td rowspan="4">racing</td><td>LAP_COMPLETED</td><td>El piloto</td><td>lap, lapTimeMs, position, topSpeedKmh</td></tr>
+<tr><td>POSITION_CHANGED</td><td>El piloto que cambia</td><td>lap, fromPosition, toPosition</td></tr>
+<tr><td>PENALTY_APPLIED</td><td>El penalizado</td><td>lap, seconds, reason</td></tr>
+<tr><td>PIT_STOP</td><td>El piloto</td><td>lap, durationMs</td></tr>
+<tr><td rowspan="3">combat</td><td>ELIMINATION</td><td>Quien elimina</td><td>victimPlayerId, weapon, distanceMeters</td></tr>
+<tr><td>DAMAGE_DEALT</td><td>Quien daña</td><td>targetPlayerId, amount, weapon</td></tr>
+<tr><td>SHOT_FIRED</td><td>Quien dispara</td><td>weapon, hit</td></tr>
+</table>
+<p>MATCH_STARTED lleva datos de la partida (pista y vueltas en racing, mapa y modo en combat), PLAYER_JOINED el nombre y datos del jugador, y MATCH_FINISHED el ganador y el ranking final: <span class="mono">{"winnerPlayerId": "...", "ranking": ["...", "..."]}</span>.</p>
+
+<h2>4.6 Relaciones entre eventos, partidas y jugadores</h2>
+<p>Los eventos no son hechos aislados: se relacionan por tres identificadores del sobre.</p>
+<ul>
+<li><b>Partida.</b> Todos los eventos con el mismo <span class="mono">gameId</span> y <span class="mono">matchId</span> pertenecen a la misma partida. Una partida empieza con MATCH_STARTED, tiene muchos eventos intermedios y termina con MATCH_FINISHED. Un juego tiene muchas partidas.</li>
+<li><b>Jugador.</b> El <span class="mono">playerId</span> dice quién protagoniza el evento. Un jugador aparece en muchas partidas, por eso se pueden calcular agregados por jugador. PLAYER_JOINED y PLAYER_LEFT delimitan su participación en una partida.</li>
+<li><b>Orden.</b> El <span class="mono">timestamp</span> ordena los eventos de una partida. Los eventos pueden llegar desordenados, y Go los ordena antes de enviarlos a Scala.</li>
+<li><b>Entre jugadores.</b> Algunos eventos involucran a un segundo jugador, que viaja dentro de <span class="mono">data</span> (por ejemplo victimPlayerId en una eliminación). El primero es siempre el <span class="mono">playerId</span>.</li>
+</ul>
+<table>
+<tr><th style="width:26%">Relación</th><th style="width:20%">Cardinalidad</th><th>Cómo se expresa</th></tr>
+<tr><td>Juego y partida</td><td>1 a muchas</td><td>gameId y matchId</td></tr>
+<tr><td>Partida y evento</td><td>1 a muchos</td><td>matchId</td></tr>
+<tr><td>Jugador y partida</td><td>muchos a muchos</td><td>playerId dentro de los eventos de cada partida</td></tr>
+<tr><td>Evento y jugador</td><td>muchos a 1 (más un segundo jugador opcional)</td><td>playerId, y un campo de data cuando hay un segundo jugador</td></tr>
+</table>
+<h2>4.7 Justificación de los eventos seleccionados</h2>
+<p>Cada evento existe porque alimenta al menos una estadística o regla. No se incluyó nada que no se use.</p>
+<table>
+<tr><th style="width:22%">Evento</th><th style="width:20%">Juego</th><th>Para qué sirve</th></tr>
+<tr><td>MATCH_STARTED, MATCH_FINISHED</td><td>Todos</td><td>Delimitan la partida, dan su duración y su estado (COMPLETED o INCOMPLETE) y el ranking final.</td></tr>
+<tr><td>PLAYER_JOINED, PLAYER_LEFT</td><td>Todos</td><td>Identifican a los participantes y permiten tratar la desconexión de un jugador.</td></tr>
+<tr><td>LAP_COMPLETED</td><td>racing</td><td>Base de la mejor vuelta, el tiempo promedio y la regla de racha de vueltas mejores.</td></tr>
+<tr><td>POSITION_CHANGED</td><td>racing</td><td>Permite detectar la remontada de carrera y contar adelantamientos.</td></tr>
+<tr><td>PENALTY_APPLIED</td><td>racing</td><td>Suma segundos de penalización por piloto.</td></tr>
+<tr><td>PIT_STOP</td><td>racing</td><td>Cuenta paradas y su duración.</td></tr>
+<tr><td>ELIMINATION</td><td>combat</td><td>Base de las eliminaciones, las muertes y la regla de racha de eliminaciones.</td></tr>
+<tr><td>DAMAGE_DEALT</td><td>combat</td><td>Suma el daño por jugador y alimenta la regla de remontada por marcador.</td></tr>
+<tr><td>SHOT_FIRED</td><td>combat</td><td>Permite calcular la precisión (disparos acertados sobre disparos).</td></tr>
+</table>
+<p>Cada partida se clasifica por su juego (<span class="mono">gameId</span>), y tanto el análisis como los contadores de Go se separan por juego.</p>
+<h1>5. Arquitectura</h1>
+<div class="fig"><img src="diagrama-arquitectura.png" style="width:440pt" alt="Arquitectura de GameStats"></div>
+<p class="cap">Figura 1. Arquitectura general. Docker Compose levanta los dos módulos; el simulador corre bajo demanda. Go acepta eventos por HTTP o por una carpeta, y Scala guarda los resultados en archivos.</p>
+<h2>5.1 Reparto de responsabilidades</h2>
+<table>
+<tr><th style="width:50%">Go (imperativo)</th><th>Scala (funcional)</th></tr>
+<tr><td>Recibir eventos por HTTP</td><td>Decodificar la partida recibida, con errores explícitos</td></tr>
+<tr><td>Validar la estructura y descartar duplicados</td><td>Transformar colecciones inmutables de eventos</td></tr>
+<tr><td>Mantener el estado de cada partida</td><td>Calcular métricas por jugador, partida y juego</td></tr>
+<tr><td>Procesar varias partidas en paralelo con goroutines y channels</td><td>Detectar patrones sobre secuencias de eventos</td></tr>
+<tr><td>Decidir cuándo una partida está lista y enviarla ordenada</td><td>Guardar y servir los resultados en JSON</td></tr>
+</table>
+<h2>5.2 Cómo se comunican: la decisión</h2>
+<p>El enunciado permite tres mecanismos entre Go y Scala. Los comparé antes de decidir.</p>
+<table>
+<tr><th style="width:17%">Opción</th><th style="width:33%">A favor</th><th style="width:33%">En contra</th><th>Decisión</th></tr>
+<tr><td>Archivos estructurados</td><td>Muy simple</td><td>No parece un sistema en ejecución continua; difícil saber cuándo leer</td><td>Descartada</td></tr>
+<tr><td>Broker (RabbitMQ, Kafka)</td><td>Asíncrono y desacoplado; Kafka permite reprocesar</td><td>Agrega infraestructura, duplicados y orden que hay que manejar; el proyecto no usa persistencia ni reproceso</td><td>Descartada: complejidad sin necesidad</td></tr>
+<tr><td>HTTP/REST con JSON</td><td>Simple, fácil de probar con curl, independiente de lenguaje, fácil de contenerizar</td><td>Síncrono; sin cola propia</td><td>Escogida</td></tr>
+</table>
+<p>La falta de cola se compensa dentro de Go: la concurrencia con goroutines y los reintentos con espera creciente cubren la parte de flujo que importa. Un componente externo puede producir eventos conociendo solo el contrato, sin saber cómo está hecho GameStats por dentro.</p>
+<h2>5.3 Contratos REST</h2>
+<table>
+<tr><th style="width:12%">Módulo</th><th style="width:34%">Endpoint</th><th>Qué hace</th></tr>
+<tr><td rowspan="5">Go :8080</td><td class="mono">POST /events</td><td>Un evento. 202 aceptado, 400 con los motivos, 409 duplicado o partida ya cerrada, 503 sobrecarga o apagado.</td></tr>
+<tr><td class="mono">POST /events/batch</td><td>Lista de eventos. Responde cuántos se aceptaron y cuántos se rechazaron, con motivos.</td></tr>
+<tr><td class="mono">GET /health</td><td>Estado del servicio.</td></tr>
+<tr><td class="mono">GET /metrics</td><td>Contadores: recibidos, aceptados, rechazados, duplicados, partidas activas, enviadas y fallidas.</td></tr>
+<tr><td class="mono">GET /rejected</td><td>Últimos eventos rechazados con sus motivos.</td></tr>
+<tr><td rowspan="7">Scala :8081</td><td class="mono">POST /analyze</td><td>Recibe una partida completa de Go, la analiza, la guarda y devuelve el análisis.</td></tr>
+<tr><td class="mono">GET /stats/matches</td><td>Lista de partidas analizadas, con filtro por juego.</td></tr>
+<tr><td class="mono">GET /stats/matches/{matchId}</td><td>Análisis completo de una partida.</td></tr>
+<tr><td class="mono">GET /stats/players/{playerId}</td><td>Agregado de un jugador en todas sus partidas.</td></tr>
+<tr><td class="mono">GET /stats/games/{gameId}</td><td>Agregado de un juego.</td></tr>
+<tr><td class="mono">GET /patterns</td><td>Patrones detectados, con filtro por juego y por tipo.</td></tr>
+<tr><td class="mono">GET /</td><td>Panel web con las partidas, las métricas, los patrones y los agregados.</td></tr>
+</table>
+<p>Lo que Go envía a Scala es una partida completa: <span class="mono">{gameId, gameVersion, matchId, status, events}</span>. El estado es COMPLETED si llegó MATCH_FINISHED, o INCOMPLETE si la partida se cerró por inactividad. Los eventos van ordenados por tiempo y sin duplicados.</p>
+<h2>5.4 Recorrido de una partida</h2>
+<ol>
+<li>La fuente envía eventos, en cualquier orden y en cualquier momento: por HTTP, o dejando archivos JSON o JSONL en la carpeta de entrada que Go vigila (sección 6.4).</li>
+<li>Go valida cada evento. Los inválidos y los duplicados se rechazan y se registran.</li>
+<li>Los válidos se entregan a la goroutine de su partida, que los acumula.</li>
+<li>Cuando llega MATCH_FINISHED, la partida espera unos instantes por eventos tardíos y se cierra. Si no llega, se cierra por inactividad como INCOMPLETE.</li>
+<li>Go ordena los eventos por tiempo y envía la partida a Scala. Si Scala no responde, reintenta con espera creciente.</li>
+<li>Scala analiza la partida, guarda el resultado como un archivo JSON en disco y lo deja disponible para consulta; al reiniciar, vuelve a cargar los resultados guardados.</li>
+</ol>
+<h2>5.5 Preparado para juegos reales futuros</h2>
+<p>Un juego nuevo, escrito en cualquier lenguaje (incluso en Prolog), solo necesita enviar eventos HTTP con el sobre común. No hay que modificar Go. Para obtener estadísticas propias se agrega un archivo en Scala con el analizador del juego y una línea de registro; si no se agrega, el juego igual recibe conteos, jugadores, duración y ganador. La misma arquitectura sirve para recibir eventos de la futura consola de juegos.</p>
+
+<h2>5.6 Plataforma completa a futuro</h2>
+<p>La Figura 2 muestra la plataforma completa a la que apunta el diseño: varios juegos (incluso en otros lenguajes) y la futura consola de juegos envían eventos al mismo contrato, ya sea por HTTP o dejando archivos en una carpeta. El núcleo no cambia; solo se agregan fuentes y analizadores.</p>
+<div class="fig"><img src="diagrama-plataforma.png" style="width:440pt" alt="Plataforma completa de GameStats"></div>
+<p class="cap">Figura 2. Plataforma completa a futuro, con varias fuentes de eventos y el mismo núcleo.</p>
+<h1>6. Módulo Go: ingestión y control del flujo</h1>
+<p>El módulo <span class="mono">ingest-go</span> usa solo la biblioteca estándar de Go y tiene unas 1 535 líneas de código en once paquetes pequeños:</p>
+<table>
+<tr><th style="width:24%">Paquete</th><th>Responsabilidad</th></tr>
+<tr><td class="mono">event</td><td>Modelo del evento, tipos y reglas de qué tipo exige jugador o acción.</td></tr>
+<tr><td class="mono">validation</td><td>Validación del sobre; reporta todos los motivos de rechazo a la vez.</td></tr>
+<tr><td class="mono">deduplication</td><td>Registro seguro para uso concurrente de los eventId ya vistos.</td></tr>
+<tr><td class="mono">matchregistry</td><td>Corazón del módulo: una goroutine por partida, cierre y entrega.</td></tr>
+<tr><td class="mono">analyticsclient</td><td>Envío a Scala con reintentos y espera creciente.</td></tr>
+<tr><td class="mono">ingestion</td><td>Une validación, deduplicación y registro de partidas.</td></tr>
+<tr><td class="mono">inbox</td><td>Vigila la carpeta de entrada y entrega a la ingestión los eventos de los archivos.</td></tr>
+<tr><td class="mono">httpapi</td><td>Los endpoints HTTP.</td></tr>
+<tr><td class="mono">rejectedlog, metrics</td><td>Registro de rechazados y contadores.</td></tr>
+<tr><td class="mono">configuration</td><td>Configuración por variables de entorno con valores por defecto.</td></tr>
+</table>
+<h2>6.1 Concurrencia: una goroutine por partida</h2>
+<p>Cada partida activa tiene su propia goroutine con un channel de entrada. Varias partidas, de varios juegos, avanzan en paralelo sin bloquearse entre sí. El registro mantiene un mapa de partidas activas protegido por un mutex y entrega cada evento al channel de su partida sin bloquear: si el buzón está lleno responde 503 y el evento puede reenviarse.</p>
+<div class="code">for {
+    select {
+    case incoming := &lt;-worker.inbox:
+        collectedEvents = append(collectedEvents, incoming)
+        if incoming.Type == event.MatchFinished {
+            matchFinished = true
+        }
+        restart(closingTimer, worker.waitBeforeClosing(matchFinished))
+    case &lt;-closingTimer.C:
+        worker.closeMatch(collectedEvents, matchFinished)
+        return
+    case &lt;-worker.registry.stopSignal:
+        worker.closeMatch(collectedEvents, matchFinished)
+        return
+    }
+}</div>
+<p class="cap">Fragmento 1. Ciclo de vida de una partida en Go: recibir, acumular y cerrar. Es código imperativo con estado mutable controlado por una sola goroutine.</p>
+<h2>6.2 Cierre de una partida sin perder eventos</h2>
+<p>El cierre ocurre por MATCH_FINISHED (tras una espera corta de 500 ms por eventos desordenados) o por inactividad (30 s por defecto). Para no perder eventos en el cierre, la partida se retira primero del registro bajo el mutex y después se vacía su buzón. Luego se ordenan los eventos por tiempo con una ordenación estable y se entregan a Scala. Un evento de una partida ya cerrada se rechaza con 409.</p>
+<h2>6.3 Robustez</h2>
+<ul>
+<li><b>Reintentos:</b> hasta 6 intentos con espera creciente en Compose. Los errores 4xx no se reintentan porque indican datos que Scala nunca aceptará.</li>
+<li><b>Apagado ordenado:</b> al recibir la señal de terminación, las partidas activas se envían como INCOMPLETE antes de que el proceso termine.</li>
+<li><b>Memoria acotada:</b> cada partida abierta reserva un buzón de 1 024 eventos. Con 2 000 partidas abiertas a la vez el módulo usa unos 450 MB.</li>
+<li><b>Observabilidad:</b> <span class="mono">/metrics</span> y <span class="mono">/rejected</span> permiten ver qué entra y qué se descarta.</li>
+</ul>
+
+<h2>6.4 Entrada por carpeta</h2>
+<p>Además de HTTP, Go puede leer eventos de archivos. Un vigilante revisa periódicamente la carpeta indicada en <span class="mono">INBOX_DIRECTORY</span> (cada <span class="mono">INBOX_POLL_INTERVAL_MILLISECONDS</span>) y pasa cada evento por la misma validación, deduplicación y registro de partidas que los eventos HTTP. No hay una segunda ruta de lógica.</p>
+<ul>
+<li><b>Archivos .jsonl:</b> un evento por línea. Si el archivo sigue creciendo, Go lo sigue leyendo desde donde se quedó y solo procesa líneas completas.</li>
+<li><b>Archivos .json:</b> un evento, una lista de eventos o un objeto con el campo <span class="mono">events</span>. Se leen cuando su tamaño y fecha dejan de cambiar, y luego se mueven a <span class="mono">processed/</span> (o a <span class="mono">failed/</span> si no se pudieron leer).</li>
+<li>Se ignoran archivos ocultos, temporales (.tmp, .part, .swp) y subcarpetas.</li>
+<li><span class="mono">/metrics</span> muestra los archivos procesados y fallidos, y los eventos aceptados por juego.</li>
+</ul>
+<h1>7. Módulo Scala: análisis funcional</h1>
+<p>El módulo <span class="mono">analytics-scala</span> usa Scala 3, Cask para HTTP y upickle para JSON, y tiene unas 1 070 líneas de código en 23 archivos. Todo el dominio es inmutable: <span class="mono">case class</span> y <span class="mono">enum</span>, sin <span class="mono">var</span>, sin <span class="mono">null</span> y sin excepciones para controlar el flujo (se usan <span class="mono">Either</span> y <span class="mono">Option</span>). Los efectos, como HTTP y el almacenamiento, quedan en los bordes; el análisis es una composición de funciones puras.</p>
+<table>
+<tr><th style="width:20%">Paquete</th><th>Responsabilidad</th></tr>
+<tr><td class="mono">domain</td><td>Evento, partida, análisis, patrón y demás modelos inmutables.</td></tr>
+<tr><td class="mono">decoding</td><td>De JSON a partida, devolviendo un <span class="mono">Either</span> con el motivo si falla.</td></tr>
+<tr><td class="mono">analysis</td><td>Pipeline de análisis genérico, trait <span class="mono">GameAnalyzer</span> y registro de analizadores.</td></tr>
+<tr><td class="mono">analysis/games</td><td>Un analizador por juego: métricas y reglas de racing y de combat.</td></tr>
+<tr><td class="mono">aggregation</td><td>Agregados por jugador y por juego, genéricos.</td></tr>
+<tr><td class="mono">encoding, storage, service, http</td><td>Resultados a JSON, almacén (en memoria o en archivos JSON), orquestación y rutas HTTP, incluido el panel web (un solo archivo HTML en los recursos del módulo).</td></tr>
+</table>
+<p><b>Persistencia.</b> Con la variable <span class="mono">RESULTS_DIRECTORY</span>, Scala guarda cada análisis como un archivo JSON (escrito a un temporal y movido de forma atómica) y al arrancar los carga de nuevo con un decodificador que devuelve <span class="mono">Either</span>; los archivos dañados se reportan y se omiten. Sin la variable usa el almacén en memoria. Ambos cumplen la misma interfaz <span class="mono">AnalysisStore</span>.</p>
+<h2>7.1 Extensión por juego</h2>
+<p>Un juego nuevo se agrega con un archivo que implementa <span class="mono">GameAnalyzer</span> (su <span class="mono">gameId</span> y una función pura que recibe la partida y devuelve métricas y patrones) y una línea que lo registra. El análisis genérico (conteos por tipo y acción, duración, jugadores y ganador) se ejecuta siempre. Las métricas son mapas de nombre a número, así que un juego nuevo añade métricas sin cambiar el modelo.</p>
+<h2>7.2 Operaciones funcionales usadas</h2>
+<table>
+<tr><th style="width:17%">Operación</th><th style="width:36%">Dónde</th><th>Para qué</th></tr>
+<tr><td class="mono">filter</td><td>RacingMetrics, CombatMetrics, Aggregation</td><td>Quedarse con las vueltas, eliminaciones o partidas relevantes</td></tr>
+<tr><td class="mono">map, flatMap</td><td>MatchAnalysisPipeline, RacingMetrics, BatchDecoder</td><td>Transformar eventos y encadenar pasos que pueden fallar</td></tr>
+<tr><td class="mono">groupBy, groupMap</td><td>RacingPatterns, CombatMetrics, Aggregation</td><td>Agrupar vueltas por piloto y métricas por nombre</td></tr>
+<tr><td class="mono">foldLeft</td><td>RacingPatterns, CombatPatterns</td><td>Recorrer los eventos acumulando rachas, marcadores y desventajas sin variables mutables</td></tr>
+<tr><td class="mono">reduce (groupMapReduce)</td><td>MatchAnalysisPipeline, Aggregation</td><td>Contar eventos por tipo y acción, y patrones por nombre</td></tr>
+<tr><td class="mono">collect</td><td>Statistics, EventData</td><td>Extraer valores presentes con pattern matching</td></tr>
+<tr><td>Composición</td><td>AnalysisEncoder, BatchDecoder, RacingPatterns</td><td><span class="mono">andThen</span> para el redondeo, <span class="mono">for</span> sobre <span class="mono">Either</span> y cadenas de <span class="mono">Option</span></td></tr>
+<tr><td class="mono">sortBy, zipWithIndex, maxByOption, count</td><td>MatchAnalysisPipeline, RacingPatterns</td><td>Ordenar por tiempo, ordenar patrones y encontrar el peor puesto</td></tr>
+</table>
+<div class="code">private def killStreaks(eliminations: List[Elimination]): List[DetectedPattern] =
+  val (openStreaks, closedStreaks) =
+    eliminations.foldLeft(
+      (Map.empty[String, List[Event]], List.empty[(String, List[Event])])
+    ) { case ((open, closed), elimination) =>
+      val interruptedStreak =
+        open.get(elimination.victimId).map(elimination.victimId -> _).toList
+      val killerStreak =
+        elimination.event :: open.getOrElse(elimination.killerId, Nil)
+      val withoutVictim = open.removed(elimination.victimId)
+      (withoutVictim.updated(elimination.killerId, killerStreak),
+       closed ++ interruptedStreak)
+    }
+  (closedStreaks ++ openStreaks.toList)
+    .filter((_, streak) => streak.size >= minimumStreakLength)
+    .map((playerId, streak) => streakPattern(playerId, streak.reverse))</div>
+<p class="cap">Fragmento 2. Detección de rachas en Scala: un foldLeft que lleva las rachas abiertas y cerradas como valores inmutables.</p>
+
+<h1>8. Estadísticas y reglas</h1>
+<p>Cada métrica se puede calcular únicamente con los eventos definidos para el juego. Una métrica sin datos suficientes se omite del resultado, nunca se rellena con cero, porque un cero inventado se confundiría con un valor real y distorsionaría los promedios.</p>
+<h2>8.1 Racing</h2>
+<table>
+<tr><th style="width:13%">Nivel</th><th style="width:25%">Métrica</th><th>Cómo se calcula</th></tr>
+<tr><td>Jugador</td><td>bestLapMs, averageLapMs</td><td>Mínimo y promedio de lapTimeMs de sus vueltas</td></tr>
+<tr><td>Jugador</td><td>lapTimeStdDevMs</td><td>Desviación estándar de sus tiempos: mide la consistencia</td></tr>
+<tr><td>Jugador</td><td>overtakesMade</td><td>Cambios de posición donde la posición mejora</td></tr>
+<tr><td>Jugador</td><td>penaltySecondsTotal, pitStopCount</td><td>Suma de penalizaciones y cantidad de paradas</td></tr>
+<tr><td>Combina eventos</td><td>effectiveRaceTimeMs</td><td>Suma de tiempos de vuelta más las penalizaciones: cruza LAP_COMPLETED y PENALTY_APPLIED</td></tr>
+<tr><td>Combina eventos</td><td>positionsGained</td><td>Posición de salida (PLAYER_JOINED) menos posición final (MATCH_FINISHED)</td></tr>
+<tr><td>Partida</td><td>fastestLapMs, totalLapsCompleted, leadChanges</td><td>Mejor vuelta de todos, vueltas totales y cambios de líder</td></tr>
+</table>
+<h2>8.2 Combat</h2>
+<table>
+<tr><th style="width:13%">Nivel</th><th style="width:25%">Métrica</th><th>Cómo se calcula</th></tr>
+<tr><td>Jugador</td><td>eliminations, deaths</td><td>Eliminaciones realizadas y recibidas (la muerte se deriva de la víctima)</td></tr>
+<tr><td>Jugador</td><td>killDeathRatio</td><td>Eliminaciones entre el mayor de muertes y 1</td></tr>
+<tr><td>Jugador</td><td>accuracyPercent</td><td>Disparos que acertaron entre disparos hechos, por 100</td></tr>
+<tr><td>Combina eventos</td><td>damagePerElimination</td><td>Daño total entre eliminaciones: cruza DAMAGE_DEALT y ELIMINATION</td></tr>
+<tr><td>Partida</td><td>totalEliminations, eliminationsPerMinute</td><td>Total y ritmo por minuto según la duración de la partida</td></tr>
+<tr><td>Partida</td><td>mostEliminationsByOnePlayer</td><td>Máximo de eliminaciones de un jugador</td></tr>
+</table>
+<h2>8.3 Reglas basadas en secuencias de eventos</h2>
+<table>
+<tr><th style="width:21%">Regla</th><th style="width:48%">Definición</th><th>Umbral</th></tr>
+<tr><td class="mono">RACE_COMEBACK</td><td>El ganador de la carrera llegó a ir cuarto o peor en alguna vuelta y terminó primero.</td><td>Posición 4</td></tr>
+<tr><td class="mono">IMPROVING_LAP_STREAK</td><td>Un piloto hizo vueltas consecutivas, cada una estrictamente más rápida que la anterior. Tiempos iguales no continúan la racha.</td><td>3 vueltas</td></tr>
+<tr><td class="mono">KILL_STREAK</td><td>Un jugador acumula eliminaciones seguidas sin ser eliminado entre ellas.</td><td>3 eliminaciones</td></tr>
+<tr><td class="mono">SCORE_COMEBACK</td><td>El ganador llegó a ir perdiendo por varias eliminaciones frente a quien lideraba y terminó ganando.</td><td>Desventaja de 3</td></tr>
+</table>
+<p>Cada patrón detectado informa el jugador, el evento donde empieza, el evento donde termina y datos numéricos (por ejemplo la longitud de la racha). Las reglas que dependen del ganador solo se evalúan si la partida terminó (COMPLETED).</p>
+<h2>8.4 Agregados entre partidas</h2>
+<p>Scala calcula, de forma genérica y sin conocer el juego, agregados de jugador y de juego: partidas jugadas y ganadas, y para cada métrica su promedio, mínimo y máximo (<span class="mono">mean_</span>, <span class="mono">min_</span>, <span class="mono">max_</span>), más el conteo de cada patrón (<span class="mono">patternCount_</span>). Así, la mejor vuelta histórica de un juego es <span class="mono">min_fastestLapMs</span>.</p>
+<div class="code">GET /stats/matches/match-racing-demo-001  (recorte)
+{ "matchId": "match-racing-demo-001", "gameId": "racing", "status": "COMPLETED",
+  "winnerPlayerId": "driver-01", "durationSeconds": 465.754, "totalEvents": 29,
+  "matchMetrics": { "fastestLapMs": 85500, "totalLapsCompleted": 20, "leadChanges": 1, ... },
+  "players": [ { "playerId": "driver-01", "eventCount": 7,
+      "metrics": { "bestLapMs": 85500, "lapTimeStdDevMs": 2785.247, "finalPosition": 1, ... } }, ... ],
+  "patterns": [ { "name": "RACE_COMEBACK", "playerId": "driver-01",
+      "details": { "worstPosition": 4, "worstLap": 1, "finalPosition": 1 } } ] }</div>
+<p class="cap">Fragmento 3. Resultado real de una partida simulada, consultado por HTTP.</p>
+
+<h1>9. Fuente de datos y simulación</h1>
+<p>El simulador es un programa Go independiente que hace de fuente externa. Solo habla HTTP y no comparte código con Go ni Scala, igual que lo haría un juego real. Genera partidas coherentes: en racing, las posiciones de cada vuelta salen de los tiempos acumulados y el ranking sigue el tiempo total.</p>
+<ul>
+<li><b>Historias de partida.</b> Cada partida sigue una historia que garantiza si se dispara o no una regla: natural (aleatoria), con remontada, con racha, o tranquila (sin ningún patrón, incluyendo casi disparos como rachas de solo dos vueltas).</li>
+<li><b>Reproducible.</b> Con la misma semilla, el mismo identificador de corrida y la misma hora de inicio se generan exactamente los mismos eventos.</li>
+<li><b>En paralelo.</b> Varias partidas de ambos juegos se envían a la vez con goroutines, con un límite de concurrencia configurable.</li>
+<li><b>Dos modos de ritmo.</b> Tiempo real simulado (cada evento a un ritmo dado) y volcado rápido (por bloques).</li>
+<li><b>Dos destinos.</b> Por HTTP hacia Go, o escribiendo un archivo .jsonl por partida en la carpeta de <span class="mono">SIMULATOR_OUTPUT_DIRECTORY</span>, que Go vigila.</li>
+</ul>
+<table>
+<tr><th style="width:21%">Escenario</th><th>Qué genera</th><th style="width:11%">Partidas</th><th style="width:11%">Eventos</th></tr>
+<tr><td class="mono">normal</td><td>Partidas aleatorias sin forzar nada</td><td>8</td><td>418</td></tr>
+<tr><td class="mono">comeback</td><td>Remontada de carrera y remontada por marcador</td><td>8</td><td>265</td></tr>
+<tr><td class="mono">killstreak</td><td>Racha de eliminaciones y racha de vueltas mejores</td><td>8</td><td>299</td></tr>
+<tr><td class="mono">out-of-order</td><td>Eventos con vecinos intercambiados</td><td>8</td><td>418</td></tr>
+<tr><td class="mono">duplicates</td><td>Algunos eventos enviados dos veces</td><td>8</td><td>504</td></tr>
+<tr><td class="mono">invalid-events</td><td>Un evento corrupto cada diez, de seis tipos de error</td><td>8</td><td>457</td></tr>
+<tr><td class="mono">disconnect</td><td>Un jugador que abandona la partida</td><td>8</td><td>426</td></tr>
+<tr><td class="mono">unfinished-match</td><td>Partida sin MATCH_FINISHED</td><td>8</td><td>332</td></tr>
+<tr><td class="mono">bulk</td><td>Volumen alto sin ritmo</td><td>400</td><td>20 980</td></tr>
+<tr><td class="mono">mixed-parallel</td><td>Mezcla de todo lo anterior; es el escenario de la demostración</td><td>24</td><td>965</td></tr>
+</table>
+<p>Los jugadores salen de un conjunto fijo de doce por juego, así que un mismo jugador aparece en varias partidas y se pueden demostrar los agregados por jugador.</p>
+
+<h1>10. Desarrollo, versionamiento y despliegue</h1>
+<h2>10.1 Git</h2>
+<p>El proyecto se desarrolló por fases, cada una en su propia rama y unida a <span class="mono">main</span> mediante un Pull Request, con mensajes de commit por tipo (<span class="mono">feat</span>, <span class="mono">fix</span>, <span class="mono">test</span>, <span class="mono">docs</span>, <span class="mono">build</span>, <span class="mono">ci</span>). Antes de cada unión se verificó la fase ejecutando el sistema.</p>
+<table>
+<tr><th style="width:8%">PR</th><th style="width:30%">Fase</th><th>Resultado</th></tr>
+<tr><td>#1</td><td>Fundación del repositorio</td><td>Estructura, esquema del evento, 29 ejemplos válidos e inválidos</td></tr>
+<tr><td>#2</td><td>Diseño de estadísticas</td><td>Juegos, eventos, métricas, reglas y resultados esperados calculados a mano</td></tr>
+<tr><td>#3</td><td>Servicio de ingesta en Go</td><td>Validación, goroutine por partida, reintentos</td></tr>
+<tr><td>#4</td><td>Núcleo de análisis en Scala</td><td>Decodificador, análisis genérico, agregados, API</td></tr>
+<tr><td>#5</td><td>Analizadores de racing y combat</td><td>Métricas y cuatro reglas de secuencia</td></tr>
+<tr><td>#6</td><td>Simulador de eventos</td><td>Diez escenarios, reproducible, en paralelo</td></tr>
+<tr><td>#7</td><td>Ejecución con Docker Compose</td><td>Un comando levanta todo; prueba de humo</td></tr>
+<tr><td>#8</td><td>Revisión integral de calidad</td><td>69 verificaciones de extremo a extremo, carga y estándares</td></tr>
+<tr><td>#9</td><td>Pipelines de CI/CD</td><td>Integración y despliegue continuos</td></tr>
+<tr><td>#10</td><td>Documentación</td><td>Este documento</td></tr>
+</table>
+<h2>10.2 Construcción reproducible y Docker</h2>
+<p>Cada módulo tiene un Dockerfile de dos etapas: la primera compila con todas las herramientas y la segunda copia solo el resultado, por eso las imágenes de Go pesan unos 21 MB. Las versiones están fijadas (Go 1.22, Scala 3.3.6, sbt 1.10.11, Java 21, Alpine 3.20) y los contenedores corren con un usuario sin privilegios. Docker Compose define los tres servicios con una red interna, comprobaciones de salud, orden de arranque (Go espera a que Scala responda) y límite de memoria. El simulador corre bajo demanda.</p>
+<table>
+<tr><th style="width:24%">Imagen</th><th style="width:18%">Tamaño</th><th>Notas</th></tr>
+<tr><td class="mono">gamestats-ingest</td><td>21 MB</td><td>Binario Go estático sobre Alpine</td></tr>
+<tr><td class="mono">gamestats-simulator</td><td>21 MB</td><td>Binario Go estático sobre Alpine</td></tr>
+<tr><td class="mono">gamestats-analytics</td><td>421 MB</td><td>Scala empaquetado con sbt sobre un JRE 21</td></tr>
+</table>
+<h2>10.3 Integración y despliegue continuos</h2>
+<p>Hay dos pipelines de GitHub Actions. En cada Pull Request, el CI revisa el formato y ejecuta el análisis estático y las pruebas de Go (con detector de condiciones de carrera) y de Scala, comprueba los estándares de código, construye las tres imágenes, levanta el sistema con Compose y ejecuta una prueba de humo. Al unir un cambio a <span class="mono">main</span>, el CD publica las tres imágenes en GitHub Container Registry con el identificador del commit y después las despliega en un entorno limpio, volviendo a ejecutar la prueba de humo contra las imágenes publicadas.</p>
+<p><b>Entorno definido.</b> El entorno de despliegue es Docker Compose con las imágenes publicadas en el registro (<span class="mono">deploy/docker-compose.published.yml</span>). El pipeline lo despliega y verifica en cada cambio, y el mismo archivo sirve para levantar el sistema en cualquier máquina con Docker. No se usan secretos: el pipeline usa el token que GitHub genera en cada ejecución. En la última ejecución, los cinco trabajos del CI y los dos del CD terminaron correctamente (el CD en 2 min 14 s).</p>
+
+<h2>10.4 Instaladores y volúmenes</h2>
+<p>Para que el sistema se pueda instalar en una máquina limpia que solo tenga Docker, el repositorio incluye <span class="mono">instalar.sh</span> y <span class="mono">detener.sh</span> (macOS y Linux) e <span class="mono">instalar.bat</span> y <span class="mono">detener.bat</span> (Windows). El instalador comprueba que Docker esté activo, construye las imágenes, levanta el sistema y espera a que esté sano; con la opción de demostración también genera partidas. No se necesita Go, Scala, sbt, Java ni make.</p>
+<p>Los datos viven en volúmenes de Docker con nombre: <span class="mono">inbox-data</span> (carpeta de entrada), <span class="mono">ingest-data</span> (registro de rechazados) y <span class="mono">analytics-data</span> (resultados). Así sobreviven a un reinicio y no dependen de permisos de carpetas del sistema anfitrión. Un archivo adicional (<span class="mono">docker-compose.inbox-folder.yml</span>) permite usar una carpeta real <span class="mono">./inbox</span> en su lugar.</p>
+<h1>11. Instalación, ejecución y despliegue</h1>
+<h2>11.1 Requisitos</h2>
+<ul>
+<li>Para ejecutar el sistema: solo Docker con Compose (Docker Desktop). Con <span class="mono">make</span> hay atajos opcionales, pero los instaladores no lo necesitan.</li>
+<li>Para correr las pruebas fuera de Docker: Go 1.22 o superior, Java 21 y sbt.</li>
+</ul>
+<h2>11.2 Ejecutar el sistema</h2>
+<p>Forma más simple, en una máquina donde solo esté instalado Docker Desktop (abierto). El instalador construye todo, genera datos de demostración y abre el panel en <b>http://localhost:8081</b>. El archivo <span class="mono">LEEME_PRIMERO.html</span> del proyecto tiene además un botón grande con ese enlace:</p>
+<div class="code">./instalar.sh    # macOS y Linux (levanta todo y genera datos de demostración)
+instalar.bat       # Windows
+./detener.sh            # detener (detener.bat en Windows)</div>
+<p>Forma con make:</p>
+<div class="code">git clone https://github.com/kevinmirandaa/GameStats.git
+cd GameStats
+make up  # construye y levanta Scala y Go (unos 12 s con las imágenes ya construidas)
+make simulate  # genera 24 partidas de racing y combat (965 eventos)</div>
+<p>El comando <span class="mono">make simulate</span> espera a que Go termine de entregar las partidas a Scala, así que las consultas siguientes ya devuelven resultados. Los resultados también se ven en el navegador, en el panel web <span class="mono">http://localhost:8081</span> (sección 11.7):</p>
+<div class="code">curl localhost:8081/stats/matches
+curl localhost:8081/patterns
+curl localhost:8081/stats/games/racing
+curl localhost:8081/stats/players/fighter-02
+curl localhost:8080/metrics
+make down  # detiene y limpia (borra también el volumen)</div>
+<h2>11.3 Pruebas</h2>
+<div class="code">make test  # Go (ingest-go y simulator) y Scala
+make smoke  # prueba de humo de extremo a extremo con Docker (15 verificaciones)
+./qa/integration.sh  # 68 verificaciones de extremo a extremo
+./qa/load.sh  # prueba de carga</div>
+<h2>11.4 Despliegue</h2>
+<p>Con las imágenes ya publicadas por el pipeline, en cualquier máquina con Docker:</p>
+<div class="code">export GAMESTATS_REGISTRY=ghcr.io/kevinmirandaa
+export GAMESTATS_TAG=latest
+docker compose -f deploy/docker-compose.published.yml up -d --wait
+docker compose -f deploy/docker-compose.published.yml --profile simulation run --rm simulator</div>
+<p>Para volver a una versión anterior, <span class="mono">GAMESTATS_TAG</span> se fija al identificador del commit deseado. La guía completa está en <span class="mono">deploy/DEPLOY.md</span>.</p>
+<h2>11.5 Variables de configuración principales</h2>
+<table>
+<tr><th style="width:38%">Variable</th><th style="width:20%">Módulo</th><th>Valor por defecto</th></tr>
+<tr><td class="mono">PORT</td><td>Go, Scala</td><td>8080 y 8081</td></tr>
+<tr><td class="mono">ANALYTICS_URL</td><td>Go</td><td>http://localhost:8081</td></tr>
+<tr><td class="mono">MATCH_IDLE_TIMEOUT_SECONDS</td><td>Go</td><td>30</td></tr>
+<tr><td class="mono">MATCH_FINISH_GRACE_MILLISECONDS</td><td>Go</td><td>500</td></tr>
+<tr><td class="mono">INBOX_DIRECTORY</td><td>Go</td><td>vacío (desactivado); en Compose, /inbox</td></tr>
+<tr><td class="mono">INBOX_POLL_INTERVAL_MILLISECONDS</td><td>Go</td><td>1000</td></tr>
+<tr><td class="mono">RESULTS_DIRECTORY</td><td>Scala</td><td>vacío (memoria); en Compose, /data/results</td></tr>
+<tr><td class="mono">SIMULATOR_OUTPUT_DIRECTORY</td><td>Simulador</td><td>vacío (usa HTTP)</td></tr>
+<tr><td class="mono">SIMULATOR_SCENARIO, SIMULATOR_SEED</td><td>Simulador</td><td>mixed-parallel, 42</td></tr>
+</table>
+
+<h2>11.6 Cómo verificar que el sistema funciona</h2>
+<p>Hay cuatro formas de comprobarlo (además del instalador de la sección 11.2), de la más rápida a la más completa. Las tres primeras se hacen sobre el código entregado; la cuarta no requiere instalar nada.</p>
+<table>
+<tr><th style="width:5%">#</th><th style="width:33%">Qué se hace</th><th style="width:34%">Comandos</th><th>Resultado esperado</th></tr>
+<tr><td>1</td><td>Prueba automática de extremo a extremo (necesita Docker, make, curl y python3)</td><td>make smoke</td><td>Termina con "PRUEBA DE HUMO APROBADA" y 20 verificaciones en OK, en unos 30 segundos</td></tr>
+<tr><td>2</td><td>Probarlo a mano, solo con Docker (funciona también en Windows, sin make)</td><td>docker compose -f deploy/docker-compose.yml up -d --build --wait<br>docker compose -f deploy/docker-compose.yml --profile simulation run --rm simulator<br>sleep 10<br>curl localhost:8081/stats/matches</td><td>El simulador informa 24 partidas y 965 eventos. Sin make hay que esperar unos 10 segundos para que Go entregue las partidas; después la consulta devuelve las 24 partidas analizadas, de racing y combat, todas COMPLETED</td></tr>
+<tr><td>3</td><td>Pruebas unitarias de cada módulo (necesita Go 1.22+, Java 21 y sbt)</td><td>cd ingest-go &amp;&amp; go test -race ./...<br>cd simulator &amp;&amp; go test -race ./...<br>cd analytics-scala &amp;&amp; sbt test</td><td>Todas en verde: 65 pruebas en ingest-go, 52 en el simulador y 92 en Scala</td></tr>
+<tr><td>4</td><td>Ver el CI/CD en GitHub, sin instalar nada</td><td>Abrir https://github.com/kevinmirandaa/GameStats, pestaña Actions</td><td>Las ejecuciones de CI y CD en verde y, en la página principal, la sección Packages con las tres imágenes publicadas</td></tr>
+</table>
+<p>Después de la opción 2, el resto del sistema se explora con las consultas de la sección 11.2: <span class="mono">/patterns</span> muestra las remontadas y rachas detectadas, <span class="mono">/stats/games/racing</span> los agregados del juego y <span class="mono">localhost:8080/metrics</span> lo que Go aceptó y rechazó. Para comprobar que el sistema es genérico se puede enviar un evento de un juego inventado (Anexo A, paso 10) y ver que se acepta sin cambiar código. Al terminar, <span class="mono">docker compose -f deploy/docker-compose.yml --profile simulation down --volumes</span> limpia todo.</p>
+
+<h2>11.7 Panel web de resultados</h2>
+<p>Con el sistema levantado y datos generados, los resultados se ven en el navegador en <span class="mono">http://localhost:8081</span>. El panel lo sirve el propio módulo Scala y usa la misma API de consulta de la sección 5.3, así que no hay nada más que instalar: es un solo archivo HTML con JavaScript, sin librerías externas. Tiene un diseño oscuro, con una barra lateral de navegación y cuatro vistas.</p>
+<ul>
+<li><b>Resumen:</b> tarjetas con las partidas analizadas, los patrones detectados y las partidas de cada juego, cada una con una pequeña gráfica. Debajo, una gráfica de área con los eventos, la duración o los patrones de cada partida (con valor al pasar el cursor), la lista de juegos, los patrones por tipo y las partidas recientes.</li>
+<li><b>Partidas:</b> tabla de todas las partidas con filtro por juego y por estado. Al pulsar una partida se abre un panel lateral con su detalle: duración, eventos, jugadores, métricas de la partida, una gráfica de barras para comparar a los jugadores en la métrica elegida, la tabla de métricas por jugador y los patrones detectados.</li>
+<li><b>Patrones:</b> tabla de los patrones detectados con filtro por tipo; al pulsar una fila se abre la partida correspondiente.</li>
+<li><b>Juegos:</b> resumen de cada juego y, plegable, el promedio, mínimo y máximo de cada métrica sobre todas sus partidas.</li>
+<li>Al pulsar el nombre de un jugador, en cualquier parte, se muestran sus agregados en todas sus partidas. El buscador de la barra lateral filtra por partida o por juego.</li>
+</ul>
+<p>El botón Actualizar vuelve a leer los datos y la casilla "Cada 5 s" los refresca mientras se generan partidas.</p>
+<div class="fig"><img src="panel-resumen.png" style="width:440pt" alt="Panel web, vista de resumen"></div>
+<p class="cap">Figura 3. Panel web, vista de resumen, con los datos de una ejecución del escenario mixed-parallel.</p>
+<div class="fig"><img src="panel-detalle.png" style="width:440pt" alt="Panel web, detalle de una partida"></div>
+<p class="cap">Figura 4. Panel web, detalle de una partida de racing con la comparación entre jugadores.</p>
+
+<h2>11.8 Probar la entrada por carpeta y la persistencia</h2>
+<div class="code">make inbox-demo      # genera una partida de ejemplo en la carpeta de entrada
+make simulate-files  # el simulador escribe archivos .jsonl que Go lee
+make inbox-add FILE=mi-partida.json   # agrega un archivo propio
+docker compose -f deploy/docker-compose.yml restart analytics
+curl localhost:8081/stats/matches     # los resultados siguen ahí</div>
+<p>Tras reiniciar Scala, los resultados se vuelven a cargar desde los archivos JSON guardados, y <span class="mono">localhost:8080/metrics</span> muestra los archivos procesados y los eventos por juego.</p>
+<h1>12. Pruebas y resultados</h1>
+<table>
+<tr><th style="width:30%">Tipo</th><th>Resultado</th></tr>
+<tr><td>Pruebas unitarias y de componentes</td><td>209 pruebas: 65 en Go de ingesta, 52 en el simulador y 92 en Scala, más de 2 700 líneas de pruebas. Las de Go se ejecutan con el detector de condiciones de carrera.</td></tr>
+<tr><td>Resultados esperados</td><td>Las cuatro partidas de ejemplo se comparan completas contra resultados calculados a mano y verificados con una segunda implementación independiente: métricas, jugadores y patrones.</td></tr>
+<tr><td>Prueba de humo</td><td>20 verificaciones: archivos en la carpeta de entrada, resultados que persisten tras reiniciar Scala, 24 partidas analizadas, cuatro patrones presentes, agregados disponibles, rechazos esperados y partidas sin cierre llegando como INCOMPLETE. Dura unos 25 segundos.</td></tr>
+<tr><td>Prueba integral</td><td>68 verificaciones sobre el sistema en Docker: eventos válidos, inválidos, duplicados y desordenados, partidas en paralelo, caída temporal de Scala y un juego inventado que se acepta sin cambiar código.</td></tr>
+<tr><td>Estándares de código</td><td>Un script automático busca comentarios, <span class="mono">var</span>, <span class="mono">null</span> y errores ignorados, y se ejecuta en cada Pull Request.</td></tr>
+</table>
+
+<h1>13. Comparación entre el enfoque imperativo y el funcional</h1>
+<p>El mismo problema, convertir un flujo de eventos en conocimiento, se resolvió con dos paradigmas, y cada uno encajó en un lugar distinto.</p>
+<table>
+<tr><th style="width:18%"></th><th style="width:41%">Go, imperativo</th><th>Scala, funcional</th></tr>
+<tr><td>Pregunta que responde</td><td>¿Cómo recibo, organizo y controlo un flujo continuo?</td><td>¿Cómo transformo una colección de eventos en conocimiento?</td></tr>
+<tr><td>Estado</td><td>Mutable, pero confinado: cada partida es de una sola goroutine</td><td>Inmutable: los datos no cambian, se crean datos nuevos</td></tr>
+<tr><td>Concurrencia</td><td>Goroutines y channels, mutex en el registro</td><td>No necesita sincronización: funciones puras sobre datos inmutables</td></tr>
+<tr><td>Control del tiempo</td><td>Temporizadores, cierre, reintentos, señales de apagado</td><td>Sin noción de tiempo real: opera sobre una lista ya ordenada</td></tr>
+<tr><td>Errores</td><td>Valores de error explícitos en cada paso</td><td><span class="mono">Either</span> y <span class="mono">Option</span> componibles con <span class="mono">for</span></td></tr>
+<tr><td>Cálculo de métricas</td><td>Habría sido bucles con acumuladores</td><td>Filtrar, agrupar, plegar: el código se parece a la definición</td></tr>
+</table>
+<p><b>Dónde brilla lo imperativo.</b> En el ciclo de vida de una partida (Fragmento 1) hay estado que cambia con el tiempo: eventos acumulados, un temporizador que se reinicia, una señal de parada. Modelarlo con un bucle y una variable controlada por una sola goroutine es natural y claro. Hacerlo de forma puramente funcional habría exigido representar el tiempo y la concurrencia con abstracciones mucho más pesadas.</p>
+<p><b>Dónde brilla lo funcional.</b> Detectar una racha de eliminaciones (Fragmento 2) es plegar una secuencia ya ordenada llevando un estado. Con <span class="mono">foldLeft</span> el estado es un valor inmutable, la función es pura y se prueba con una lista de eventos de juguete, sin servidor ni reloj. Las métricas se escriben casi como su definición: filtrar las vueltas del piloto, tomar los tiempos y calcular el mínimo. No hay bucles ni variables que cambiar.</p>
+<p><b>Ventajas y limitaciones.</b> Lo imperativo da control fino sobre recursos y tiempo, pero obliga a razonar con cuidado sobre quién cambia qué: el cierre de una partida sin perder eventos requirió retirarla del registro bajo un mutex antes de vaciar su buzón. Lo funcional hace el análisis fácil de probar y de componer, pero depende de que alguien más entregue los datos completos y ordenados, y su costo es que cada transformación crea estructuras nuevas. Dividir el sistema así saca partido de las fortalezas de cada uno.</p>
+
+<h1 class="pb">14. Cumplimiento del enunciado</h1>
+<table>
+<tr><th style="width:44%">Requisito</th><th style="width:10%">Estado</th><th>Dónde está</th></tr>
+<tr><td>Modelo de eventos coherente y documentado; relaciones entre eventos, partidas y jugadores</td><td>Cumple</td><td>Sección 4; esquema JSON y contratos por juego</td></tr>
+<tr><td>Estadísticas derivables de los eventos y regla basada en una secuencia</td><td>Cumple</td><td>Sección 8: cuatro reglas</td></tr>
+<tr><td>Datos de prueba suficientes</td><td>Cumple</td><td>Sección 9: diez escenarios, hasta 20 980 eventos</td></tr>
+<tr><td>Go: recibir, validar, administrar el flujo, mantener el estado por partida y enviar a Scala</td><td>Cumple</td><td>Secciones 5 y 6</td></tr>
+<tr><td>Go: concurrencia con goroutines y channels</td><td>Cumple</td><td>Sección 6.1</td></tr>
+<tr><td>Scala: colecciones y operaciones funcionales justificadas</td><td>Cumple</td><td>Sección 7.2</td></tr>
+<tr><td>Scala: estadísticas, reglas y resultados estructurados en JSON</td><td>Cumple</td><td>Secciones 7 y 8</td></tr>
+<tr><td>Módulos independientes con comunicación documentada y formato claro para un productor externo</td><td>Cumple</td><td>Secciones 4 y 5.3</td></tr>
+<tr><td>Fuente simulada: varias partidas, jugadores, juegos en paralelo, casos normales y especiales</td><td>Cumple</td><td>Sección 9</td></tr>
+<tr><td>Funcionalidades mínimas 1 a 10 (recibir, validar, identificar, agrupar, estadística por jugador, por partida, combinada, regla por secuencia, consulta y presentación de resultados)</td><td>Cumple</td><td>Secciones 5 a 8 y 11.7; <span class="mono">make smoke</span></td></tr>
+<tr><td>Go lee eventos de una fuente continua (HTTP y carpeta vigilada)</td><td>Cumple</td><td>Secciones 5.4 y 6.4</td></tr>
+<tr><td>Estadísticas almacenadas y recuperables tras reiniciar</td><td>Cumple</td><td>Sección 7 (persistencia) y 11.8</td></tr>
+<tr><td>Instalación en una máquina limpia solo con Docker</td><td>Cumple</td><td>Secciones 10.4 y 11.2</td></tr>
+<tr><td>Clasificación por juego</td><td>Cumple</td><td>Secciones 4.7 y 6.4 (contadores por juego)</td></tr>
+<tr><td>Repositorio Git con historial</td><td>Cumple</td><td>Sección 10.1; más de 37 commits y 10 Pull Requests</td></tr>
+<tr><td>Construcción reproducible, Docker y ejecución integrada</td><td>Cumple</td><td>Sección 10.2; <span class="mono">make up</span></td></tr>
+<tr><td>Pipeline de CI/CD con compilación y manejo de contenedores</td><td>Cumple</td><td>Sección 10.3; <span class="mono">.github/workflows</span></td></tr>
+<tr><td>Despliegue de una versión funcional en un entorno definido</td><td>Cumple</td><td>Secciones 10.3 y 11.4</td></tr>
+<tr><td>Entregables: código, formato de eventos, juegos y justificación, estadísticas y reglas, Dockerfiles, CI/CD, instalación, ejecución y despliegue, demostración</td><td>Cumple</td><td>Este documento, el código y el Anexo A</td></tr>
+<tr><td>Genérico: un conjunto nuevo de eventos entra sin rehacer el sistema</td><td>Cumple</td><td>Secciones 4.4 y 5.5; prueba con un juego inventado</td></tr>
+<tr><td>Justificar qué se beneficia de lo imperativo y qué de lo funcional</td><td>Cumple</td><td>Sección 13</td></tr>
+</table>
+
+<h1>15. Limitaciones y trabajo futuro</h1>
+<ul>
+<li><b>Persistencia simple.</b> Los resultados se guardan como archivos JSON, uno por partida, y se recargan al arrancar. Es suficiente para este volumen; con millones de partidas convendría una base de datos, y la interfaz <span class="mono">AnalysisStore</span> permite cambiarla sin tocar el resto.</li>
+<li><b>Entrada por carpeta con sondeo.</b> Go revisa la carpeta periódicamente en lugar de recibir avisos del sistema operativo; es más portable y suficiente para el ritmo esperado.</li>
+<li><b>Partidas durante una caída de Scala.</b> Go reintenta durante unos 15 segundos. Si Scala sigue caído, esa partida se pierde y se cuenta como fallida. Una cola persistente de reenvío queda como mejora.</li>
+<li><b>Entorno de despliegue temporal.</b> El pipeline despliega y verifica en un entorno limpio de GitHub Actions; no deja una dirección pública permanente. El mismo Compose puede copiarse a un servidor.</li>
+<li><b>Juegos reales y consola.</b> La arquitectura está lista para recibir eventos de juegos reales, incluso en otros lenguajes, y de la futura consola de juegos. Basta con respetar el contrato y, si se desean estadísticas propias, escribir un analizador.</li>
+<li><b>Más juegos y estadísticas.</b> El tercer dominio propuesto, estrategia, y nuevas reglas de secuencia se agregan sin tocar el núcleo.</li>
+<li><b>Interfaz.</b> Hay un panel web sencillo y los resultados también se consultan por HTTP en JSON. Una interfaz más completa, con gráficas por vuelta o por jugador, podría construirse sobre la misma API.</li>
+</ul>
+
+<h1>16. Conclusión</h1>
+<p>GameStats cumple con la arquitectura que pide el enunciado: Go concentra la ingestión, el estado y la concurrencia, y Scala concentra el análisis funcional, comunicados por HTTP con un contrato claro. Lo más importante del diseño es la separación entre lo común y lo específico: el sobre del evento es estable y el contenido de cada juego queda aislado en un solo archivo, de modo que un juego nuevo se incorpora sin rehacer nada.</p>
+<p>El proceso mostró también que cada paradigma tiene su lugar. El estado que cambia con el tiempo, como el ciclo de vida de una partida, se maneja mejor con control imperativo. La transformación de una lista de eventos en estadísticas y patrones es más clara y más fácil de probar con funciones puras. El sistema se construyó por fases, se verificó ejecutándolo de punta a punta y se despliega de forma automática, lo que permite confiar en que lo que se entrega funciona.</p>
+
+<h1 class="pb">Anexo A. Guion de la demostración</h1>
+<p>La demostración dura entre cinco y ocho minutos y se hace sobre el sistema real en Docker.</p>
+<table>
+<tr><th style="width:5%">#</th><th style="width:44%">Paso</th><th>Qué se muestra</th></tr>
+<tr><td>1</td><td>Explicar la arquitectura con la Figura 1</td><td>Fuente, Go, Scala y consulta; por qué REST</td></tr>
+<tr><td>2</td><td><span class="mono">make up</span></td><td>Los dos servicios sanos en unos 12 segundos</td></tr>
+<tr><td>3</td><td><span class="mono">make simulate</span></td><td>Resumen: 24 partidas, 965 eventos, 937 aceptados, 28 rechazados (duplicados e inválidos)</td></tr>
+<tr><td>4</td><td><span class="mono">curl localhost:8080/metrics</span></td><td>Lo que Go recibió, aceptó y rechazó; 24 partidas enviadas, 0 fallidas</td></tr>
+<tr><td>5</td><td>Abrir <span class="mono">http://localhost:8081</span> en el navegador</td><td>El panel web: resumen, tabla de partidas; al pulsar una partida, sus métricas, la gráfica por jugador y los patrones; al pulsar un jugador, sus agregados</td></tr>
+<tr><td>6</td><td><span class="mono">curl localhost:8081/stats/matches</span></td><td>24 partidas analizadas, de racing y combat, todas COMPLETED</td></tr>
+<tr><td>7</td><td><span class="mono">curl localhost:8081/patterns</span></td><td>Las remontadas y rachas detectadas</td></tr>
+<tr><td>8</td><td>Una partida: <span class="mono">curl localhost:8081/stats/matches/match-racing-demo-001</span></td><td>Métricas por jugador, por partida y el patrón detectado</td></tr>
+<tr><td>9</td><td><span class="mono">curl localhost:8081/stats/games/racing</span> y <span class="mono">/stats/players/fighter-02</span></td><td>Agregados entre partidas</td></tr>
+<tr><td>10</td><td>Enviar un evento de un juego inventado con <span class="mono">curl -X POST localhost:8080/events -d '...'</span></td><td>Se acepta sin cambiar código: la arquitectura es genérica</td></tr>
+<tr><td>11</td><td>Mostrar la pestaña Actions de GitHub</td><td>El CI y el CD en verde y los tres paquetes publicados</td></tr>
+<tr><td>12</td><td><span class="mono">make inbox-demo</span> y luego <span class="mono">curl localhost:8080/metrics</span></td><td>Go lee una partida desde la carpeta de entrada; aparecen archivos procesados y eventos por juego</td></tr>
+<tr><td>13</td><td><span class="mono">docker compose -f deploy/docker-compose.yml restart analytics</span> y consultar <span class="mono">/stats/matches</span></td><td>Los resultados persisten tras el reinicio</td></tr>
+<tr><td>14</td><td><span class="mono">make down</span></td><td>El sistema se detiene y se limpia</td></tr>
+</table>
+<p>Para el paso 10, un evento de ejemplo:</p>
+<div class="code">curl -X POST localhost:8080/events -d '{
+  "schemaVersion": "1.0", "eventId": "mi-evento-1",
+  "timestamp": "2026-10-12T18:00:00Z",
+  "gameId": "ajedrez", "gameVersion": "1.0",
+  "matchId": "partida-ajedrez-1", "playerId": "kevin",
+  "type": "GAME_ACTION", "action": "MOVE",
+  "data": {"from": "e2", "to": "e4"}
+}'</div>
+
+</body>
+</html>

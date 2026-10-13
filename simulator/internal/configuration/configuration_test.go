@@ -102,3 +102,18 @@ func TestHelpIsReportedAsHelpAndNotAsAFailure(t *testing.T) {
 		t.Fatalf("expected flag.ErrHelp but got %v", err)
 	}
 }
+
+func TestTheOutputDirectoryCanBeSetByFlagOrEnvironmentAndIsEmptyByDefault(t *testing.T) {
+	byDefault, err := configuration.Load(nil, lookupFrom(nil), now)
+	if err != nil || byDefault.OutputDirectory != "" {
+		t.Fatalf("unexpected default %+v (%v)", byDefault, err)
+	}
+	fromEnvironment, err := configuration.Load(nil, lookupFrom(map[string]string{"SIMULATOR_OUTPUT_DIRECTORY": "/inbox"}), now)
+	if err != nil || fromEnvironment.OutputDirectory != "/inbox" {
+		t.Fatalf("unexpected environment value %+v (%v)", fromEnvironment, err)
+	}
+	fromFlag, err := configuration.Load([]string{"-output-directory", "./out"}, lookupFrom(nil), now)
+	if err != nil || fromFlag.OutputDirectory != "./out" {
+		t.Fatalf("unexpected flag value %+v (%v)", fromFlag, err)
+	}
+}

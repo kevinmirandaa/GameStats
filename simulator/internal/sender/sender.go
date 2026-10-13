@@ -55,6 +55,10 @@ func (sender *Sender) WaitUntilHealthy(ctx context.Context, patience time.Durati
 	}
 }
 
+func (sender *Sender) Deliver(ctx context.Context, _ string, payloads [][]byte, pacing Pacing, tally *Tally) {
+	sender.Send(ctx, payloads, pacing, tally)
+}
+
 func (sender *Sender) Send(ctx context.Context, payloads [][]byte, pacing Pacing, tally *Tally) {
 	if pacing.EventsPerSecond > 0 {
 		sender.sendOneByOne(ctx, payloads, pacing.EventsPerSecond, tally)

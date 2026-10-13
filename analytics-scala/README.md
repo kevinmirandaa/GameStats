@@ -30,6 +30,7 @@ El dominio, el analisis y los agregados son funciones puras. Los efectos (HTTP y
 - `GET /stats/games/{gameId}` agregado del juego.
 - `GET /patterns?gameId=&type=` patrones detectados.
 - `GET /health`.
+- `GET /` panel web de resultados (una sola página HTML en `src/main/resources/dashboard/`). Abrir `http://localhost:8081` en el navegador.
 
 Variable de entorno: `PORT` (8081 por defecto).
 

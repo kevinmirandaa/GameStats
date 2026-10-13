@@ -103,6 +103,10 @@ sample_player="$(curl -fs "$analytics_url/stats/matches?gameId=combat" | json "d
 player_matches="$(curl -fs "$analytics_url/stats/players/$sample_player" | json "int(data['aggregates']['matchesPlayed'])")"
 check "agregado de jugador disponible ($sample_player en $player_matches partidas)" "$([ "$player_matches" -ge 1 ] && echo true || echo false)"
 
+dashboard_status="$(curl -s -o /dev/null -w '%{http_code}' "$analytics_url/")"
+dashboard_title="$(curl -fs "$analytics_url/" | grep -c 'GameStats' || true)"
+check "panel web disponible (HTTP $dashboard_status)" "$([ "$dashboard_status" = "200" ] && [ "$dashboard_title" -ge 1 ] && echo true || echo false)"
+
 ingest_metrics="$(curl -fs "$ingest_url/metrics")"
 rejected="$(echo "$ingest_metrics" | json "data['eventsRejected']")"
 failed_deliveries="$(echo "$ingest_metrics" | json "data['matchesFailed']")"
@@ -119,6 +123,32 @@ incomplete_matches() {
 }
 wait_until "partidas INCOMPLETE por inactividad" '[ "$(incomplete_matches)" -ge 4 ]' || true
 check "partidas sin cierre llegan como INCOMPLETE ($(incomplete_matches) de 4)" "$([ "$(incomplete_matches)" -ge 4 ] && echo true || echo false)"
+
+echo "Ejecutando la entrada por carpeta (archivos .jsonl del simulador y un archivo .json de ejemplo)"
+files_run_id="${run_id}-files"
+SIMULATOR_OUTPUT_DIRECTORY=/inbox SIMULATOR_SCENARIO=normal SIMULATOR_MATCHES_PER_GAME=3 SIMULATOR_RUN_ID="$files_run_id" \
+  "${compose[@]}" --profile simulation run --rm simulator
+"${compose[@]}" cp "$repository_root/contracts/examples/games/combat/patterns-not-triggered.batch.json" ingest-go:/inbox/humo-combate.json
+files_matches() {
+  curl -fs "$analytics_url/stats/matches" | json "len([m for m in data if '$files_run_id' in m['matchId'] and m['status']=='COMPLETED'])"
+}
+example_status() {
+  curl -s -o /dev/null -w '%{http_code}' "$analytics_url/stats/matches/match-combat-002"
+}
+wait_until "partidas de la carpeta analizadas" '[ "$(files_matches)" -ge 6 ] && [ "$(example_status)" = "200" ]' || true
+check "archivos .jsonl de la carpeta inbox analizados ($(files_matches) de 6)" "$([ "$(files_matches)" -ge 6 ] && echo true || echo false)"
+check "archivo .json de la carpeta inbox analizado (match-combat-002)" "$([ "$(example_status)" = "200" ] && echo true || echo false)"
+files_processed="$(curl -fs "$ingest_url/metrics" | json "data['filesProcessed']")"
+check "el archivo .json se archivo en la carpeta processed ($files_processed procesado)" "$([ "$files_processed" -ge 1 ] && "${compose[@]}" exec -T ingest-go test -f /inbox/processed/humo-combate.json && echo true || echo false)"
+games_counted="$(curl -fs "$ingest_url/metrics" | json "' '.join(sorted(data['eventsAcceptedByGame']))")"
+check "Go cuenta los eventos aceptados por juego ($games_counted)" "$(contains_word "$games_counted" combat)"
+
+echo "Reiniciando analytics-scala para comprobar que los resultados se conservan"
+matches_before_restart="$(curl -fs "$analytics_url/stats/matches" | json "len(data)")"
+"${compose[@]}" restart analytics-scala >/dev/null 2>&1
+wait_until "analytics-scala sano tras el reinicio" "curl -fs $analytics_url/health" || true
+matches_after_restart="$(curl -fs "$analytics_url/stats/matches" | json "len(data)")"
+check "los resultados se conservan al reiniciar ($matches_after_restart de $matches_before_restart partidas)" "$([ "$matches_before_restart" -gt 0 ] && [ "$matches_after_restart" -eq "$matches_before_restart" ] && echo true || echo false)"
 
 echo
 if [ "$failures" -eq 0 ]; then

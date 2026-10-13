@@ -30,12 +30,16 @@ type Summary struct {
 	Failed   int64
 }
 
+type Target interface {
+	Deliver(ctx context.Context, matchId string, payloads [][]byte, pacing sender.Pacing, tally *sender.Tally)
+}
+
 type job struct {
 	generator games.GameMatchGenerator
 	index     int
 }
 
-func Run(ctx context.Context, settings Settings, generators []games.GameMatchGenerator, chosen scenario.Scenario, target *sender.Sender) Summary {
+func Run(ctx context.Context, settings Settings, generators []games.GameMatchGenerator, chosen scenario.Scenario, target Target) Summary {
 	matchesPerGame := settings.MatchesPerGame
 	if matchesPerGame == 0 {
 		matchesPerGame = chosen.DefaultMatchesPerGame
@@ -71,7 +75,7 @@ func Run(ctx context.Context, settings Settings, generators []games.GameMatchGen
 	}
 }
 
-func playMatch(ctx context.Context, settings Settings, chosen scenario.Scenario, pending job, target *sender.Sender, tally *sender.Tally) {
+func playMatch(ctx context.Context, settings Settings, chosen scenario.Scenario, pending job, target Target, tally *sender.Tally) {
 	random := rand.New(rand.NewSource(seedFor(settings.Seed, pending.generator.GameId(), pending.index)))
 	variation := chosen.VariationFor(pending.index)
 	plan := games.MatchPlan{
@@ -81,7 +85,7 @@ func playMatch(ctx context.Context, settings Settings, chosen scenario.Scenario,
 		Storyline: variation.Storyline,
 	}
 	payloads := scenario.Apply(pending.generator.Generate(plan, random), variation, random)
-	target.Send(ctx, payloads, settings.Pacing, tally)
+	target.Deliver(ctx, plan.MatchId, payloads, settings.Pacing, tally)
 }
 
 func playersFor(generator games.GameMatchGenerator, count int, random *rand.Rand) []string {

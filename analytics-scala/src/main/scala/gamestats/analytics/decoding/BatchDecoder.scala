@@ -4,6 +4,7 @@ import java.time.{Instant, OffsetDateTime}
 
 import scala.util.Try
 
+import gamestats.analytics.decoding.JsonReading.*
 import gamestats.analytics.domain.*
 
 object BatchDecoder:
@@ -74,36 +75,3 @@ object BatchDecoder:
     events.find(_.matchId != matchId) match
       case Some(foreignEvent) => Left(s"event ${foreignEvent.eventId} belongs to match ${foreignEvent.matchId}, not $matchId")
       case None               => Right(())
-
-  private def parseObject(rawJson: String, description: String): Either[String, ujson.Obj] =
-    Try(ujson.read(rawJson)).toEither.left
-      .map(_ => s"$description is not valid JSON")
-      .flatMap(asObject(_, description))
-
-  private def asObject(value: ujson.Value, description: String): Either[String, ujson.Obj] =
-    value match
-      case objectValue: ujson.Obj => Right(objectValue)
-      case _                      => Left(s"$description must be a JSON object")
-
-  private def requiredText(fields: ujson.Obj, fieldName: String): Either[String, String] =
-    fields.obj.get(fieldName) match
-      case Some(ujson.Str(text)) if text.nonEmpty => Right(text)
-      case Some(_)                                => Left(s"$fieldName must be a non empty string")
-      case None                                   => Left(s"$fieldName is required")
-
-  private def optionalText(fields: ujson.Obj, fieldName: String): Option[String] =
-    fields.obj.get(fieldName).collect { case ujson.Str(text) if text.nonEmpty => text }
-
-  private def requiredArray(fields: ujson.Obj, fieldName: String): Either[String, List[ujson.Value]] =
-    fields.obj.get(fieldName) match
-      case Some(ujson.Arr(items)) => Right(items.toList)
-      case Some(_)                => Left(s"$fieldName must be an array")
-      case None                   => Left(s"$fieldName is required")
-
-  private def sequence[A](results: List[Either[String, A]]): Either[String, List[A]] =
-    results.foldRight(Right(Nil): Either[String, List[A]]) { (result, accumulated) =>
-      for
-        items <- accumulated
-        item <- result
-      yield item :: items
-    }

@@ -32,3 +32,10 @@ rejected-events.log
 .env.local
 deploy/.env
 node_modules/
+
+entregables/GameStats_Codigo.zip
+estudio/
+
+entregables/.DS_Store
+
+/inbox/
