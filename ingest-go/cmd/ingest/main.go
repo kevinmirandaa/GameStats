@@ -14,6 +14,7 @@ import (
 	"gamestats/ingest/internal/configuration"
 	"gamestats/ingest/internal/deduplication"
 	"gamestats/ingest/internal/httpapi"
+	"gamestats/ingest/internal/inbox"
 	"gamestats/ingest/internal/ingestion"
 	"gamestats/ingest/internal/matchregistry"
 	"gamestats/ingest/internal/metrics"
@@ -65,12 +66,28 @@ func run() error {
 		Handler:           httpapi.NewHandler(service),
 		ReadHeaderTimeout: readHeaderTimeout,
 	}
-	return serveUntilTerminated(httpServer, registry)
+	return serveUntilTerminated(httpServer, registry, folderWatcherFor(settings, service, rejections, counters))
 }
 
-func serveUntilTerminated(httpServer *http.Server, registry *matchregistry.Registry) error {
+func folderWatcherFor(settings configuration.Configuration, service *ingestion.Service, rejections *rejectedlog.Log, counters *metrics.Counters) *inbox.Watcher {
+	if settings.InboxDirectory == "" {
+		return nil
+	}
+	slog.Info("watching folder for event files", "directory", settings.InboxDirectory, "pollInterval", settings.InboxPollInterval)
+	return inbox.New(settings.InboxDirectory, settings.InboxPollInterval, service, rejections, counters)
+}
+
+func serveUntilTerminated(httpServer *http.Server, registry *matchregistry.Registry, folderWatcher *inbox.Watcher) error {
 	terminationSignal, stopListening := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stopListening()
+
+	watcherStopped := make(chan struct{})
+	go func() {
+		defer close(watcherStopped)
+		if folderWatcher != nil {
+			folderWatcher.Run(terminationSignal)
+		}
+	}()
 
 	serverFailure := make(chan error, 1)
 	go func() {
@@ -93,5 +110,6 @@ func serveUntilTerminated(httpServer *http.Server, registry *matchregistry.Regis
 	if err := httpServer.Shutdown(shutdownContext); err != nil {
 		return err
 	}
+	<-watcherStopped
 	return registry.Shutdown(shutdownContext)
 }

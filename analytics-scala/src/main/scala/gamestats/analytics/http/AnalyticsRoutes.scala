@@ -1,9 +1,23 @@
 package gamestats.analytics.http
 
+import java.nio.charset.StandardCharsets
+
+import scala.util.Using
+
 import gamestats.analytics.encoding.AnalysisEncoder
 import gamestats.analytics.service.AnalyticsService
 
+private object DashboardPage:
+  private val resourcePath = "/dashboard/index.html"
+
+  lazy val html: String =
+    Using.resource(getClass.getResourceAsStream(resourcePath))(stream => new String(stream.readAllBytes(), StandardCharsets.UTF_8))
+
 class AnalyticsRoutes(service: AnalyticsService)(using castor.Context, cask.Logger) extends cask.Routes:
+
+  @cask.get("/")
+  def dashboard(): cask.Response[String] =
+    cask.Response(DashboardPage.html, 200, Seq("Content-Type" -> "text/html; charset=utf-8"))
 
   @cask.post("/analyze")
   def analyze(request: cask.Request): cask.Response[String] =

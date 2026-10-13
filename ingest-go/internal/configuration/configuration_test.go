@@ -47,3 +47,20 @@ func TestInvalidNumbersAreReported(t *testing.T) {
 		}
 	}
 }
+
+func TestTheInboxIsDisabledByDefaultAndConfigurableByEnvironment(t *testing.T) {
+	disabled, err := configuration.Load(lookupFrom(nil))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if disabled.InboxDirectory != "" || disabled.InboxPollInterval != time.Second {
+		t.Fatalf("unexpected defaults %+v", disabled)
+	}
+	enabled, err := configuration.Load(lookupFrom(map[string]string{"INBOX_DIRECTORY": "/inbox", "INBOX_POLL_INTERVAL_MILLISECONDS": "250"}))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if enabled.InboxDirectory != "/inbox" || enabled.InboxPollInterval != 250*time.Millisecond {
+		t.Fatalf("unexpected configuration %+v", enabled)
+	}
+}

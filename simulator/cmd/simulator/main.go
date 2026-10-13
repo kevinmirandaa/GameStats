@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"gamestats/simulator/internal/configuration"
+	"gamestats/simulator/internal/filedrop"
 	"gamestats/simulator/internal/games"
 	"gamestats/simulator/internal/runner"
 	"gamestats/simulator/internal/scenario"
@@ -42,9 +43,8 @@ func run() error {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
-	target := sender.New(settings.TargetURL)
-	slog.Info("waiting for the target", "url", settings.TargetURL)
-	if err := target.WaitUntilHealthy(ctx, settings.WaitForTarget); err != nil {
+	target, err := targetFor(ctx, settings)
+	if err != nil {
 		return err
 	}
 
@@ -74,4 +74,17 @@ func generatorsFor(gameIds []string) []games.GameMatchGenerator {
 		}
 	}
 	return generators
+}
+
+func targetFor(ctx context.Context, settings configuration.Settings) (runner.Target, error) {
+	if settings.OutputDirectory != "" {
+		slog.Info("writing event files", "directory", settings.OutputDirectory)
+		return filedrop.New(settings.OutputDirectory)
+	}
+	httpTarget := sender.New(settings.TargetURL)
+	slog.Info("waiting for the target", "url", settings.TargetURL)
+	if err := httpTarget.WaitUntilHealthy(ctx, settings.WaitForTarget); err != nil {
+		return nil, err
+	}
+	return httpTarget, nil
 }

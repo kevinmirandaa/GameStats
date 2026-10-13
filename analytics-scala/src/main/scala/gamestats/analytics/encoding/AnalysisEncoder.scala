@@ -4,7 +4,12 @@ import gamestats.analytics.domain.*
 
 object AnalysisEncoder:
 
-  private val decimalPlaces = 1000.0
+  private val decimalFactor = 1000.0
+
+  private val scaleUp: Double => Double = _ * decimalFactor
+  private val roundToWhole: Double => Long = Math.round
+  private val scaleDown: Long => Double = _ / decimalFactor
+  private val roundToThreeDecimals: Double => Double = scaleUp.andThen(roundToWhole).andThen(scaleDown)
 
   def matchAnalysis(analysis: MatchAnalysis): ujson.Value =
     ujson.Obj.from(
@@ -68,4 +73,4 @@ object AnalysisEncoder:
   private def counts(values: Map[String, Int]): ujson.Obj =
     ujson.Obj.from(values.toList.sortBy(_._1).map((name, count) => name -> ujson.Num(count)))
 
-  private def number(value: Double): ujson.Num = ujson.Num(Math.round(value * decimalPlaces) / decimalPlaces)
+  private def number(value: Double): ujson.Num = ujson.Num(roundToThreeDecimals(value))

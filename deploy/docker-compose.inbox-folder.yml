@@ -1,0 +1,7 @@
+services:
+  ingest-go:
+    volumes:
+      - ../inbox:/inbox
+  simulator:
+    volumes:
+      - ../inbox:/inbox

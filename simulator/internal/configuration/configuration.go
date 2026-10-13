@@ -26,6 +26,7 @@ type Settings struct {
 	Parallel        int
 	WaitForTarget   time.Duration
 	StartTime       time.Time
+	OutputDirectory string
 }
 
 const (
@@ -50,6 +51,7 @@ func Load(arguments []string, lookup func(string) (string, bool), now time.Time)
 	gameList := flags.String("games", environment.text("SIMULATOR_GAMES", "racing,combat"), "comma separated game ids")
 	batchSize := flags.Int("batch-size", environment.integer("SIMULATOR_BATCH_SIZE", 25), "events per request when not pacing")
 	parallel := flags.Int("parallel", environment.integer("SIMULATOR_PARALLEL", 16), "matches sent at the same time")
+	outputDirectory := flags.String("output-directory", environment.text("SIMULATOR_OUTPUT_DIRECTORY", ""), "write .jsonl files to this folder instead of sending HTTP requests")
 	startText := flags.String("start-time", environment.text("SIMULATOR_START_TIME", ""), "RFC 3339 time of the first match, defaults to now, fix it to repeat a run exactly")
 	waitSeconds := flags.Int("wait-seconds", environment.integer("SIMULATOR_WAIT_SECONDS", 30), "seconds to wait for the target to be healthy")
 
@@ -74,6 +76,7 @@ func Load(arguments []string, lookup func(string) (string, bool), now time.Time)
 		Parallel:        *parallel,
 		WaitForTarget:   time.Duration(*waitSeconds) * time.Second,
 		StartTime:       startTime,
+		OutputDirectory: *outputDirectory,
 	}
 	if environment.err != nil {
 		return Settings{}, environment.err

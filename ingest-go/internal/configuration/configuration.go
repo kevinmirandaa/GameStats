@@ -17,6 +17,8 @@ type Configuration struct {
 	AnalyticsBackoff     time.Duration
 	AnalyticsTimeout     time.Duration
 	MatchInboxCapacity   int
+	InboxDirectory       string
+	InboxPollInterval    time.Duration
 }
 
 const (
@@ -29,6 +31,7 @@ const (
 	defaultAnalyticsBackoffMillis  = 200
 	defaultAnalyticsTimeoutSeconds = 10
 	defaultMatchInboxCapacity      = 1024
+	defaultInboxPollMilliseconds   = 1000
 )
 
 func Load(lookup func(string) (string, bool)) (Configuration, error) {
@@ -40,6 +43,7 @@ func Load(lookup func(string) (string, bool)) (Configuration, error) {
 	backoffMillis := reader.integer("ANALYTICS_INITIAL_BACKOFF_MILLISECONDS", defaultAnalyticsBackoffMillis)
 	timeoutSeconds := reader.integer("ANALYTICS_REQUEST_TIMEOUT_SECONDS", defaultAnalyticsTimeoutSeconds)
 	inboxCapacity := reader.integer("MATCH_INBOX_CAPACITY", defaultMatchInboxCapacity)
+	inboxPollMillis := reader.integer("INBOX_POLL_INTERVAL_MILLISECONDS", defaultInboxPollMilliseconds)
 
 	if reader.err != nil {
 		return Configuration{}, reader.err
@@ -54,6 +58,8 @@ func Load(lookup func(string) (string, bool)) (Configuration, error) {
 		AnalyticsBackoff:     time.Duration(backoffMillis) * time.Millisecond,
 		AnalyticsTimeout:     time.Duration(timeoutSeconds) * time.Second,
 		MatchInboxCapacity:   inboxCapacity,
+		InboxDirectory:       reader.text("INBOX_DIRECTORY", ""),
+		InboxPollInterval:    time.Duration(inboxPollMillis) * time.Millisecond,
 	}, nil
 }
 

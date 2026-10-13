@@ -55,6 +55,7 @@ func (service *Service) Ingest(rawEvent []byte) Result {
 		return service.rejectSubmission(err, eventId, rawEvent)
 	}
 	service.counters.EventAccepted()
+	service.counters.GameEventAccepted(checked.Event.GameId)
 	return Result{Outcome: Accepted, EventId: eventId}
 }
 

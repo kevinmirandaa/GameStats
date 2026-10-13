@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GameStats</title>
+<style>
+:root {
+  --background: #08090a;
+  --panel: #0e1114;
+  --line: #22272d;
+  --line-soft: #1a1e23;
+  --text: #eef1f4;
+  --muted: #8b939d;
+  --green: #35e29f;
+  --orange: #f6a23c;
+  --purple: #a98bfa;
+  --blue: #5ea8ff;
+  --radius: 16px;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  font-family: Inter, "SF Pro Display", -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  font-size: 14px;
+  color: var(--text);
+  background: radial-gradient(1100px 520px at 18% -8%, rgba(53, 226, 159, 0.11), transparent 60%), var(--background);
+  background-attachment: fixed;
+  -webkit-font-smoothing: antialiased;
+}
+button, select, input { font: inherit; color: inherit; }
+.layout { display: grid; grid-template-columns: 272px 1fr; min-height: 100vh; gap: 0; }
+.sidebar {
+  position: sticky; top: 0; height: 100vh; padding: 22px 18px;
+  border-right: 1px solid var(--line-soft);
+  display: flex; flex-direction: column; gap: 22px;
+}
+.brand { display: flex; align-items: center; gap: 12px; }
+.brand-mark {
+  width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center;
+  font-weight: 700; letter-spacing: -0.02em; border: 1px solid var(--line); background: #11151a;
+  box-shadow: 0 0 22px rgba(53, 226, 159, 0.16);
+}
+.brand-name { font-weight: 600; font-size: 15px; }
+.brand-sub { color: var(--muted); font-size: 12.5px; margin-top: 1px; }
+.search {
+  display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px;
+  background: rgba(255, 255, 255, 0.025); color: var(--muted);
+}
+.search input { background: transparent; border: 0; outline: none; width: 100%; color: var(--text); }
+.nav-title { color: var(--muted); font-size: 12px; margin: 0 0 8px 6px; letter-spacing: 0.02em; }
+.nav { display: flex; flex-direction: column; gap: 4px; }
+.nav button {
+  display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 12px; border: 1px solid transparent;
+  background: transparent; color: var(--muted); cursor: pointer; text-align: left;
+}
+.nav button:hover { color: var(--text); background: rgba(255, 255, 255, 0.03); }
+.nav button.active { color: var(--text); border-color: var(--line); background: rgba(255, 255, 255, 0.04); }
+.nav .count {
+  margin-left: auto; font-size: 11.5px; color: var(--green); border: 1px solid rgba(53, 226, 159, 0.35);
+  border-radius: 999px; padding: 1px 8px; background: rgba(53, 226, 159, 0.08);
+}
+.sidebar-foot {
+  margin-top: auto; border: 1px solid var(--line-soft); border-radius: 14px; padding: 14px; color: var(--muted);
+  font-size: 12.5px; line-height: 1.5; background: rgba(255, 255, 255, 0.02);
+}
+.sidebar-foot strong { color: var(--text); font-weight: 600; }
+.main { min-width: 0; padding: 20px 28px 48px; }
+.topbar {
+  display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap;
+  border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 20px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.012));
+}
+.topbar-title { display: flex; align-items: center; gap: 14px; }
+.icon-box { width: 44px; height: 44px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 12px; background: #11151a; }
+.topbar h1 { margin: 0; font-size: 19px; font-weight: 600; letter-spacing: -0.01em; }
+.topbar p { margin: 2px 0 0; color: var(--muted); }
+.controls { display: flex; align-items: center; gap: 12px; color: var(--muted); font-size: 13px; flex-wrap: wrap; }
+.switch { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+.switch input { accent-color: var(--green); }
+.button {
+  border: 1px solid var(--line); background: rgba(255, 255, 255, 0.04); border-radius: 10px; padding: 8px 14px; cursor: pointer; color: var(--text);
+}
+.button:hover { border-color: rgba(53, 226, 159, 0.5); }
+.view { display: none; margin-top: 22px; }
+.view.active { display: block; }
+.heading-row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+.heading-row h2 { margin: 0; font-size: 34px; font-weight: 500; letter-spacing: -0.03em; }
+.pill { border: 1px solid var(--line); border-radius: 8px; padding: 3px 10px; color: var(--muted); font-size: 12.5px; background: rgba(255, 255, 255, 0.03); }
+.grid { display: grid; gap: 16px; }
+.cards { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.split { grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); margin-top: 16px; }
+.card {
+  position: relative; overflow: hidden; border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.012)), var(--panel);
+}
+.card.accent-green { border-color: rgba(53, 226, 159, 0.5); box-shadow: 0 0 28px rgba(53, 226, 159, 0.08) inset; }
+.card.accent-orange { border-color: rgba(246, 162, 60, 0.5); box-shadow: 0 0 28px rgba(246, 162, 60, 0.08) inset; }
+.card.accent-purple { border-color: rgba(169, 139, 250, 0.5); box-shadow: 0 0 28px rgba(169, 139, 250, 0.08) inset; }
+.card.accent-blue { border-color: rgba(94, 168, 255, 0.5); box-shadow: 0 0 28px rgba(94, 168, 255, 0.08) inset; }
+.card h3 { margin: 0; font-size: 17px; font-weight: 500; }
+.card .sub { color: var(--muted); margin-top: 3px; font-size: 13px; }
+.stat-value { font-size: 36px; font-weight: 500; letter-spacing: -0.03em; margin: 20px 0 4px; }
+.stat-note { font-size: 13px; color: var(--muted); }
+.stat-note strong { font-weight: 600; }
+.spark { position: absolute; right: 0; bottom: 0; width: 56%; height: 58%; pointer-events: none; }
+.chart-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+.segmented { display: flex; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.segmented button { border: 0; background: transparent; color: var(--muted); padding: 6px 12px; cursor: pointer; font-size: 13px; }
+.segmented button.active { background: rgba(53, 226, 159, 0.12); color: var(--green); }
+.chart-wrap { position: relative; margin-top: 16px; }
+.chart-wrap svg { width: 100%; height: 230px; display: block; }
+.chart-dot {
+  position: absolute; width: 11px; height: 11px; border-radius: 50%; background: var(--green); border: 2px solid #0b0d0f;
+  transform: translate(-50%, -50%); box-shadow: 0 0 12px rgba(53, 226, 159, 0.8); display: none; pointer-events: none;
+}
+.chart-tip {
+  position: absolute; transform: translate(-50%, -140%); background: #151a1f; border: 1px solid var(--line); border-radius: 8px;
+  padding: 4px 9px; font-size: 12px; white-space: nowrap; display: none; pointer-events: none;
+}
+.chart-foot { display: flex; justify-content: space-between; margin-top: 12px; color: var(--muted); font-size: 13px; }
+.chart-foot strong { color: var(--text); font-size: 20px; font-weight: 500; display: block; margin-top: 4px; }
+.list { display: flex; flex-direction: column; gap: 14px; margin-top: 16px; }
+.list-row { display: grid; grid-template-columns: 28px 1fr 110px; gap: 12px; align-items: center; }
+.dot { width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center; font-weight: 700; font-size: 12px; color: #0b0d0f; }
+.list-row .name { font-weight: 500; }
+.list-row .meta { color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+.list-row svg { width: 110px; height: 34px; }
+.bars { display: flex; flex-direction: column; gap: 11px; margin-top: 16px; }
+.bar-row { display: grid; grid-template-columns: 210px 1fr 60px; gap: 12px; align-items: center; font-size: 13px; }
+.bar-track { height: 10px; border-radius: 999px; background: rgba(255, 255, 255, 0.06); overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, rgba(53, 226, 159, 0.45), var(--green)); box-shadow: 0 0 14px rgba(53, 226, 159, 0.35); }
+.bar-value { text-align: right; color: var(--muted); }
+.table-wrap { overflow-x: auto; margin-top: 14px; }
+table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+th { text-align: left; color: var(--muted); font-weight: 500; font-size: 12.5px; padding: 10px 14px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+td { padding: 12px 14px; border-bottom: 1px solid var(--line-soft); white-space: nowrap; }
+tbody tr:last-child td { border-bottom: 0; }
+tbody tr.clickable { cursor: pointer; }
+tbody tr.clickable:hover { background: rgba(255, 255, 255, 0.035); }
+.num { text-align: right; font-variant-numeric: tabular-nums; }
+.chip { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 12px; border: 1px solid var(--line); }
+.chip.ok { color: var(--green); border-color: rgba(53, 226, 159, 0.4); background: rgba(53, 226, 159, 0.08); }
+.chip.warn { color: var(--orange); border-color: rgba(246, 162, 60, 0.4); background: rgba(246, 162, 60, 0.08); }
+.chip.info { color: var(--purple); border-color: rgba(169, 139, 250, 0.4); background: rgba(169, 139, 250, 0.08); }
+.toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 4px; }
+.toolbar select {
+  background: rgba(255, 255, 255, 0.04); border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; color: var(--text);
+}
+.toolbar option { background: #12161a; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px; margin-top: 12px; }
+.tiles.four { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.tile { border: 1px solid var(--line-soft); border-radius: 12px; padding: 10px 12px; background: rgba(255, 255, 255, 0.025); }
+.tile .tile-label { color: var(--muted); font-size: 12px; overflow-wrap: anywhere; }
+.tile .tile-value { font-size: 19px; margin-top: 4px; font-weight: 500; letter-spacing: -0.01em; }
+.empty { border: 1px dashed var(--line); border-radius: var(--radius); padding: 28px; text-align: center; color: var(--muted); margin-top: 16px; }
+.error { border: 1px solid rgba(255, 107, 107, 0.5); color: #ff9b9b; border-radius: 12px; padding: 12px 16px; margin-top: 14px; background: rgba(255, 107, 107, 0.06); }
+.overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.55); backdrop-filter: blur(2px); display: none; z-index: 10; }
+.overlay.open { display: block; }
+.drawer {
+  position: fixed; top: 0; right: 0; height: 100vh; width: min(640px, 100vw); z-index: 11; overflow-y: auto;
+  background: #0b0e11; border-left: 1px solid var(--line); padding: 22px 24px 40px; transform: translateX(105%); transition: transform 0.22s ease;
+}
+.drawer.open { transform: translateX(0); }
+.drawer-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.drawer-head h3 { margin: 0 0 6px; font-size: 20px; font-weight: 500; letter-spacing: -0.01em; word-break: break-all; }
+.drawer h4 { margin: 24px 0 4px; font-size: 14px; font-weight: 600; }
+.drawer-meta { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; color: var(--muted); }
+.player-link { color: var(--green); cursor: pointer; text-decoration: none; border-bottom: 1px dashed rgba(53, 226, 159, 0.5); }
+.pattern-item { border: 1px solid var(--line-soft); border-radius: 12px; padding: 10px 14px; margin-top: 8px; background: rgba(255, 255, 255, 0.025); }
+.pattern-item .pattern-title { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.pattern-item .pattern-detail { color: var(--muted); margin-top: 6px; font-size: 13px; }
+details { margin-top: 12px; }
+summary { cursor: pointer; color: var(--green); font-size: 13px; }
+@media (max-width: 1080px) { .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } .split { grid-template-columns: 1fr; } }
+@media (max-width: 860px) {
+  .layout { grid-template-columns: 1fr; }
+  .sidebar { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line-soft); }
+  .nav { flex-direction: row; flex-wrap: wrap; }
+  .sidebar-foot { display: none; }
+  .cards { grid-template-columns: 1fr; }
+  .main { padding: 16px; }
+  .bar-row { grid-template-columns: 110px 1fr 50px; }
+}
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">GS</div>
+      <div>
+        <div class="brand-name">GameStats</div>
+        <div class="brand-sub">Panel de análisis</div>
+      </div>
+    </div>
+    <label class="search" id="searchBox"></label>
+    <div>
+      <p class="nav-title">General</p>
+      <nav class="nav" id="nav"></nav>
+    </div>
+    <div class="sidebar-foot" id="sidebarFoot"></div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-title">
+        <div class="icon-box" id="topIcon"></div>
+        <div>
+          <h1 id="viewTitle">Resumen</h1>
+          <p id="viewSubtitle">Estado del análisis de partidas</p>
+        </div>
+      </div>
+      <div class="controls">
+        <span id="updated">Sin datos</span>
+        <label class="switch"><input type="checkbox" id="auto"> Cada 5 s</label>
+        <button class="button" id="refresh">Actualizar</button>
+      </div>
+    </header>
+
+    <div id="message"></div>
+
+    <section class="view active" data-view="overview">
+      <div class="heading-row"><h2>Resumen</h2><span class="pill" id="overviewScope">todas las partidas</span></div>
+      <div class="grid cards" id="overviewCards"></div>
+      <div class="grid split">
+        <div class="card" id="mainChart"></div>
+        <div class="card" id="gamesList"></div>
+      </div>
+      <div class="grid split">
+        <div class="card" id="patternBars"></div>
+        <div class="card" id="recentMatches"></div>
+      </div>
+    </section>
+
+    <section class="view" data-view="matches">
+      <div class="card">
+        <div class="toolbar" id="matchToolbar"></div>
+        <div class="table-wrap" id="matchTable"></div>
+      </div>
+    </section>
+
+    <section class="view" data-view="patterns">
+      <div class="card">
+        <div class="toolbar" id="patternToolbar"></div>
+        <div class="table-wrap" id="patternTable"></div>
+      </div>
+    </section>
+
+    <section class="view" data-view="games">
+      <div class="grid" id="gamesDetail" style="gap:16px"></div>
+    </section>
+  </div>
+</div>
+
+<div class="overlay" id="overlay"></div>
+<aside class="drawer" id="drawer"></aside>
+
+<script>
+const icons = {
+  overview: '<path d="M4 13h6V4H4zM14 20h6V11h-6zM14 4h6v4h-6zM4 17h6v3H4z"/>',
+  matches: '<path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/>',
+  patterns: '<path d="M13 3L5 14h6l-1 7 8-11h-6z"/>',
+  games: '<path d="M12 3l9 5-9 5-9-5zM3 13l9 5 9-5M3 17l9 5 9-5"/>',
+  search: '<circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>',
+  chart: '<path d="M4 19V5M4 19h16M8 15l3-4 3 3 5-7"/>'
+};
+
+const icon = (name, size = 18) =>
+  `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${icons[name]}</svg>`;
+
+const views = {
+  overview: { title: "Resumen", subtitle: "Estado del análisis de partidas", icon: "chart" },
+  matches: { title: "Partidas", subtitle: "Todas las partidas analizadas y su detalle", icon: "matches" },
+  patterns: { title: "Patrones", subtitle: "Remontadas y rachas detectadas en las secuencias de eventos", icon: "patterns" },
+  games: { title: "Juegos", subtitle: "Agregados de cada juego sobre todas sus partidas", icon: "games" }
+};
+
+const palette = ["--green", "--orange", "--purple", "--blue"];
+const state = { matches: [], patterns: [], games: {}, view: "overview", gameFilter: "", statusFilter: "", patternFilter: "", search: "", series: "events", timer: null, openMatch: null, openMetric: null };
+
+const colorOf = (gameId) => {
+  const ids = Object.keys(state.games).sort();
+  const index = Math.max(0, ids.indexOf(gameId));
+  return getComputedStyle(document.documentElement).getPropertyValue(palette[index % palette.length]).trim();
+};
+const accentClass = (gameId) => ["accent-green", "accent-orange", "accent-purple", "accent-blue"][Math.max(0, Object.keys(state.games).sort().indexOf(gameId)) % 4];
+
+const formatNumber = (value) => Number(value).toLocaleString("es-CR", { maximumFractionDigits: 2 });
+
+const fetchJson = async (path) => {
+  const response = await fetch(path);
+  if (!response.ok) throw new Error(path + " respondió " + response.status);
+  return response.json();
+};
+
+const html = (strings, ...values) => strings.reduce((text, part, position) => text + part + (values[position] ?? ""), "");
+const escapeText = (value) => String(value).replace(/[&<>"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character]);
+
+const smoothPath = (points) => {
+  if (!points.length) return "";
+  let path = `M${points[0][0]},${points[0][1]}`;
+  for (let index = 0; index < points.length - 1; index += 1) {
+    const [x0, y0] = points[index - 1] || points[index];
+    const [x1, y1] = points[index];
+    const [x2, y2] = points[index + 1];
+    const [x3, y3] = points[index + 2] || points[index + 1];
+    path += ` C${x1 + (x2 - x0) / 6},${y1 + (y2 - y0) / 6} ${x2 - (x3 - x1) / 6},${y2 - (y3 - y1) / 6} ${x2},${y2}`;
+  }
+  return path;
+};
+
+const chartPoints = (values, width, height, padding) => {
+  const smallest = Math.min(...values);
+  const largest = Math.max(...values);
+  const span = largest - smallest || 1;
+  return values.map((value, position) => [
+    values.length === 1 ? width / 2 : (position / (values.length - 1)) * width,
+    padding + (1 - (value - smallest) / span) * (height - padding * 2)
+  ]);
+};
+
+const areaSvg = (values, color, options = {}) => {
+  const width = options.width || 600;
+  const height = options.height || 230;
+  const padding = options.padding ?? 16;
+  const identifier = "g" + Math.random().toString(36).slice(2, 8);
+  if (!values.length) return `<svg viewBox="0 0 ${width} ${height}" preserveAspectRatio="none"></svg>`;
+  const points = chartPoints(values, width, height, padding);
+  const line = smoothPath(points);
+  const area = `${line} L${width},${height} L0,${height} Z`;
+  const grid = options.grid ? [0.25, 0.55, 0.85].map((fraction) => `<line x1="0" x2="${width}" y1="${height * fraction}" y2="${height * fraction}" stroke="rgba(255,255,255,0.08)" stroke-dasharray="4 6" vector-effect="non-scaling-stroke"/>`).join("") : "";
+  return `<svg viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" aria-hidden="true">
+    <defs>
+      <linearGradient id="${identifier}" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="${color}" stop-opacity="0.34"/><stop offset="100%" stop-color="${color}" stop-opacity="0"/></linearGradient>
+      <filter id="${identifier}b" x="-5%" y="-30%" width="110%" height="160%"><feGaussianBlur stdDeviation="3"/></filter>
+    </defs>
+    ${grid}
+    <path d="${area}" fill="url(#${identifier})"/>
+    <path d="${line}" fill="none" stroke="${color}" stroke-width="3" opacity="0.55" filter="url(#${identifier}b)" vector-effect="non-scaling-stroke"/>
+    <path d="${line}" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+  </svg>`;
+};
+
+const matchesInScope = () => state.matches.filter((match) => !state.search || (match.matchId + " " + match.gameId).toLowerCase().includes(state.search.toLowerCase()));
+
+const seriesOf = (matches) => ({
+  events: { label: "Eventos por partida", values: matches.map((match) => match.totalEvents), unit: "eventos" },
+  duration: { label: "Duración por partida", values: matches.map((match) => match.durationSeconds), unit: "s" },
+  patterns: { label: "Patrones por partida", values: matches.map((match) => match.patternCount), unit: "patrones" }
+});
+
+const average = (values) => (values.length ? values.reduce((total, value) => total + value, 0) / values.length : 0);
+
+const setView = (view) => {
+  state.view = view;
+  document.querySelectorAll(".view").forEach((section) => section.classList.toggle("active", section.dataset.view === view));
+  document.querySelectorAll("#nav button").forEach((button) => button.classList.toggle("active", button.dataset.view === view));
+  document.getElementById("viewTitle").textContent = views[view].title;
+  document.getElementById("viewSubtitle").textContent = views[view].subtitle;
+  document.getElementById("topIcon").innerHTML = icon(views[view].icon, 22);
+};
+
+const renderChrome = () => {
+  document.getElementById("searchBox").innerHTML = `${icon("search", 17)}<input id="searchInput" placeholder="Buscar partida o juego" value="${escapeText(state.search)}">`;
+  document.getElementById("searchInput").addEventListener("input", (event) => {
+    state.search = event.target.value;
+    if (state.view === "overview" && state.search) setView("matches");
+    renderAll();
+    const field = document.getElementById("searchInput");
+    field.focus();
+    field.setSelectionRange(field.value.length, field.value.length);
+  });
+  const counts = { overview: "", matches: state.matches.length, patterns: state.patterns.length, games: Object.keys(state.games).length };
+  document.getElementById("nav").innerHTML = Object.keys(views).map((view) =>
+    `<button data-view="${view}" class="${view === state.view ? "active" : ""}">${icon(view === "overview" ? "overview" : views[view].icon)}<span>${views[view].title}</span>${counts[view] ? `<span class="count">${counts[view]}</span>` : ""}</button>`).join("");
+  document.querySelectorAll("#nav button").forEach((button) => button.addEventListener("click", () => setView(button.dataset.view)));
+  document.getElementById("sidebarFoot").innerHTML = `<strong>Datos en vivo</strong><br>Los resultados salen de la API de análisis. Genera partidas con <strong>make simulate</strong> y pulsa Actualizar.`;
+};
+
+const statCard = ({ title, note, value, detail, color, values, accent }) => `
+  <div class="card ${accent}">
+    <h3>${title}</h3>
+    <div class="sub">${note}</div>
+    <div class="stat-value">${value}</div>
+    <div class="stat-note">${detail}</div>
+    <div class="spark">${areaSvg(values, color, { width: 300, height: 120, padding: 12 })}</div>
+  </div>`;
+
+const renderOverview = () => {
+  const matches = matchesInScope();
+  const completed = matches.filter((match) => match.status === "COMPLETED").length;
+  const gameIds = Object.keys(state.games).sort();
+  const sortedMatches = [...matches].sort((first, second) => first.matchId.localeCompare(second.matchId));
+  const events = seriesOf(sortedMatches);
+  document.getElementById("overviewScope").textContent = state.search ? "filtro: " + state.search : "todas las partidas";
+
+  const cards = [
+    { title: "Partidas analizadas", note: "Total recibido desde Go", value: formatNumber(matches.length), detail: `<strong style="color:var(--green)">${completed}</strong> completas, ${matches.length - completed} incompletas`, color: colorOf(gameIds[0]) || "#35e29f", values: events.events.values, accent: "accent-green" },
+    { title: "Patrones detectados", note: "Remontadas y rachas", value: formatNumber(state.patterns.length), detail: `en <strong style="color:var(--orange)">${matches.filter((match) => match.patternCount > 0).length}</strong> partidas`, color: "#f6a23c", values: events.patterns.values, accent: "accent-orange" },
+    ...gameIds.slice(0, 2).map((gameId) => {
+      const own = sortedMatches.filter((match) => match.gameId === gameId);
+      return { title: "Juego " + gameId, note: "Partidas de este juego", value: formatNumber(own.length), detail: `${formatNumber(average(own.map((match) => match.totalEvents)))} eventos por partida`, color: colorOf(gameId), values: own.map((match) => match.totalEvents), accent: accentClass(gameId) };
+    })
+  ];
+  document.getElementById("overviewCards").innerHTML = matches.length ? cards.map(statCard).join("") : `<div class="empty" style="grid-column:1/-1">Todavía no hay partidas analizadas. Ejecuta <strong>make simulate</strong> y pulsa Actualizar.</div>`;
+  renderMainChart(sortedMatches);
+  renderGamesList(sortedMatches, gameIds);
+  renderPatternBars();
+  renderRecent(sortedMatches);
+};
+
+const renderMainChart = (sortedMatches) => {
+  const all = seriesOf(sortedMatches);
+  const current = all[state.series];
+  const host = document.getElementById("mainChart");
+  const tabs = Object.entries(all).map(([key, value]) => `<button data-series="${key}" class="${key === state.series ? "active" : ""}">${value.label.split(" ")[0]}</button>`).join("");
+  host.innerHTML = `
+    <div class="chart-head">
+      <div><h3>${current.label}</h3><div class="sub">Cada punto es una partida, ordenadas por identificador</div></div>
+      <div class="segmented" id="seriesTabs">${tabs}</div>
+    </div>
+    <div class="chart-wrap" id="chartWrap">${areaSvg(current.values, "#35e29f", { grid: true })}<div class="chart-dot" id="chartDot"></div><div class="chart-tip" id="chartTip"></div></div>
+    <div class="chart-foot">
+      <div>PROMEDIO<strong>${formatNumber(average(current.values))} ${current.unit}</strong></div>
+      <div style="text-align:right">RANGO<strong>${current.values.length ? formatNumber(Math.min(...current.values)) + " a " + formatNumber(Math.max(...current.values)) : "-"}</strong></div>
+    </div>`;
+  document.querySelectorAll("#seriesTabs button").forEach((button) => button.addEventListener("click", () => { state.series = button.dataset.series; renderMainChart(sortedMatches); }));
+  const wrap = document.getElementById("chartWrap");
+  const dot = document.getElementById("chartDot");
+  const tip = document.getElementById("chartTip");
+  if (!current.values.length) return;
+  const points = chartPoints(current.values, 600, 230, 16);
+  wrap.addEventListener("mousemove", (event) => {
+    const box = wrap.getBoundingClientRect();
+    const fraction = Math.min(1, Math.max(0, (event.clientX - box.left) / box.width));
+    const index = Math.round(fraction * (current.values.length - 1));
+    dot.style.display = tip.style.display = "block";
+    dot.style.left = tip.style.left = (points[index][0] / 600) * 100 + "%";
+    dot.style.top = tip.style.top = (points[index][1] / 230) * 100 + "%";
+    tip.textContent = sortedMatches[index].matchId + ": " + formatNumber(current.values[index]) + " " + current.unit;
+  });
+  wrap.addEventListener("mouseleave", () => { dot.style.display = tip.style.display = "none"; });
+};
+
+const renderGamesList = (sortedMatches, gameIds) => {
+  const rows = gameIds.map((gameId) => {
+    const own = sortedMatches.filter((match) => match.gameId === gameId);
+    const patterns = own.reduce((total, match) => total + match.patternCount, 0);
+    return `<div class="list-row">
+      <div class="dot" style="background:${colorOf(gameId)}">${gameId.slice(0, 2).toUpperCase()}</div>
+      <div><div class="name">${gameId}</div><div class="meta">${own.length} partidas, ${patterns} patrones</div></div>
+      ${areaSvg(own.map((match) => match.totalEvents), colorOf(gameId), { width: 110, height: 34, padding: 4 })}
+    </div>`;
+  }).join("");
+  document.getElementById("gamesList").innerHTML = `<h3>Juegos</h3><div class="sub">Eventos por partida de cada juego</div><div class="list">${rows || '<div class="empty">Sin datos todavía.</div>'}</div>`;
+};
+
+const renderPatternBars = () => {
+  const counts = {};
+  state.patterns.forEach((occurrence) => { counts[occurrence.pattern.name] = (counts[occurrence.pattern.name] || 0) + 1; });
+  const entries = Object.entries(counts).sort((first, second) => second[1] - first[1]);
+  const largest = Math.max(...entries.map(([, count]) => count), 1);
+  document.getElementById("patternBars").innerHTML = `<h3>Patrones por tipo</h3><div class="sub">Cuántas veces se detectó cada regla</div>
+    <div class="bars">${entries.map(([name, count]) => `<div class="bar-row"><span>${name}</span><div class="bar-track"><div class="bar-fill" style="width:${(count / largest) * 100}%"></div></div><span class="bar-value">${count}</span></div>`).join("") || '<div class="empty">No se detectó ningún patrón todavía.</div>'}</div>`;
+};
+
+const statusChip = (status) => `<span class="chip ${status === "COMPLETED" ? "ok" : "warn"}">${status === "COMPLETED" ? "Completa" : "Incompleta"}</span>`;
+
+const renderRecent = (sortedMatches) => {
+  const recent = [...sortedMatches].slice(-6).reverse();
+  document.getElementById("recentMatches").innerHTML = `<h3>Partidas recientes</h3><div class="sub">Haz clic en una partida para ver su detalle</div>
+    <div class="table-wrap"><table><thead><tr><th>Partida</th><th>Estado</th><th class="num">Eventos</th></tr></thead><tbody>
+      ${recent.map((match) => `<tr class="clickable" data-match="${escapeText(match.matchId)}"><td>${escapeText(match.matchId)}</td><td>${statusChip(match.status)}</td><td class="num">${match.totalEvents}</td></tr>`).join("")}
+    </tbody></table></div>`;
+  bindMatchRows(document.getElementById("recentMatches"));
+};
+
+const bindMatchRows = (scope) => scope.querySelectorAll("tr[data-match]").forEach((row) => row.addEventListener("click", () => openMatch(row.dataset.match)));
+
+const renderMatchesView = () => {
+  const gameIds = Object.keys(state.games).sort();
+  document.getElementById("matchToolbar").innerHTML = `
+    <select id="gameFilter"><option value="">Todos los juegos</option>${gameIds.map((gameId) => `<option value="${gameId}" ${gameId === state.gameFilter ? "selected" : ""}>${gameId}</option>`).join("")}</select>
+    <select id="statusFilter"><option value="">Cualquier estado</option><option value="COMPLETED" ${state.statusFilter === "COMPLETED" ? "selected" : ""}>Completas</option><option value="INCOMPLETE" ${state.statusFilter === "INCOMPLETE" ? "selected" : ""}>Incompletas</option></select>`;
+  document.getElementById("gameFilter").addEventListener("change", (event) => { state.gameFilter = event.target.value; renderMatchesView(); });
+  document.getElementById("statusFilter").addEventListener("change", (event) => { state.statusFilter = event.target.value; renderMatchesView(); });
+  const visible = matchesInScope().filter((match) => (!state.gameFilter || match.gameId === state.gameFilter) && (!state.statusFilter || match.status === state.statusFilter));
+  document.getElementById("matchTable").innerHTML = visible.length
+    ? `<table><thead><tr><th>Partida</th><th>Juego</th><th>Estado</th><th class="num">Eventos</th><th class="num">Duración (s)</th><th class="num">Patrones</th></tr></thead><tbody>
+        ${visible.map((match) => `<tr class="clickable" data-match="${escapeText(match.matchId)}"><td>${escapeText(match.matchId)}</td><td><span style="color:${colorOf(match.gameId)}">${match.gameId}</span></td><td>${statusChip(match.status)}</td><td class="num">${match.totalEvents}</td><td class="num">${formatNumber(match.durationSeconds)}</td><td class="num">${match.patternCount}</td></tr>`).join("")}</tbody></table>`
+    : `<div class="empty">No hay partidas que coincidan. Ejecuta <strong>make simulate</strong> o cambia los filtros.</div>`;
+  bindMatchRows(document.getElementById("matchTable"));
+};
+
+const detailText = (details) => Object.entries(details).map(([name, value]) => `${name}: ${formatNumber(value)}`).join(", ");
+
+const renderPatternsView = () => {
+  const names = [...new Set(state.patterns.map((occurrence) => occurrence.pattern.name))].sort();
+  document.getElementById("patternToolbar").innerHTML = `<select id="patternFilter"><option value="">Todos los patrones</option>${names.map((name) => `<option value="${name}" ${name === state.patternFilter ? "selected" : ""}>${name}</option>`).join("")}</select>`;
+  document.getElementById("patternFilter").addEventListener("change", (event) => { state.patternFilter = event.target.value; renderPatternsView(); });
+  const visible = state.patterns.filter((occurrence) => (!state.patternFilter || occurrence.pattern.name === state.patternFilter) && (!state.search || (occurrence.matchId + occurrence.pattern.playerId).toLowerCase().includes(state.search.toLowerCase())));
+  document.getElementById("patternTable").innerHTML = visible.length
+    ? `<table><thead><tr><th>Patrón</th><th>Juego</th><th>Partida</th><th>Jugador</th><th>Detalle</th></tr></thead><tbody>
+        ${visible.map((occurrence) => `<tr class="clickable" data-match="${escapeText(occurrence.matchId)}"><td><span class="chip info">${occurrence.pattern.name}</span></td><td>${occurrence.gameId}</td><td>${escapeText(occurrence.matchId)}</td><td>${escapeText(occurrence.pattern.playerId)}</td><td style="color:var(--muted)">${detailText(occurrence.pattern.details)}</td></tr>`).join("")}</tbody></table>`
+    : `<div class="empty">No hay patrones para mostrar.</div>`;
+  bindMatchRows(document.getElementById("patternTable"));
+};
+
+const renderGamesView = () => {
+  const gameIds = Object.keys(state.games).sort();
+  const isSummary = (name) => name.startsWith("matches") || name.startsWith("patternCount_");
+  document.getElementById("gamesDetail").innerHTML = gameIds.length ? gameIds.map((gameId) => {
+    const aggregates = state.games[gameId];
+    const names = Object.keys(aggregates).sort();
+    const tiles = (list) => list.map((name) => `<div class="tile"><div class="tile-label">${aggregateLabel(name)}</div><div class="tile-value">${formatNumber(aggregates[name])}</div></div>`).join("");
+    return `<div class="card ${accentClass(gameId)}"><h3>${gameId}</h3><div class="sub">Resumen sobre todas las partidas analizadas del juego</div>
+      <div class="tiles">${tiles(names.filter(isSummary))}</div>
+      <details><summary>Ver los ${names.length} agregados (promedio, mínimo y máximo de cada métrica)</summary><div class="tiles">${tiles(names)}</div></details></div>`;
+  }).join("") : `<div class="empty">Todavía no hay juegos con partidas analizadas.</div>`;
+};
+
+const aggregateLabel = (name) => {
+  const fixed = { matchesAnalyzed: "Partidas analizadas", matchesCompleted: "Partidas completas", matchesPlayed: "Partidas jugadas", wins: "Victorias" };
+  const prefixes = { mean_: "Promedio de ", min_: "Mínimo de ", max_: "Máximo de ", patternCount_: "Patrón " };
+  const prefix = Object.keys(prefixes).find((candidate) => name.startsWith(candidate));
+  return fixed[name] || (prefix ? prefixes[prefix] + name.slice(prefix.length) : name);
+};
+
+const metricNames = (players) => [...new Set(players.flatMap((player) => Object.keys(player.metrics)))].sort();
+
+const closeDrawer = () => {
+  document.getElementById("drawer").classList.remove("open");
+  document.getElementById("overlay").classList.remove("open");
+};
+
+const renderDrawer = (analysis, playerAggregate) => {
+  const names = metricNames(analysis.players);
+  if (!names.includes(state.openMetric)) state.openMetric = names[0] || null;
+  const metricValues = analysis.players.filter((player) => state.openMetric in player.metrics).map((player) => [player.playerId, player.metrics[state.openMetric]]);
+  const largest = Math.max(...metricValues.map(([, value]) => value), 1);
+  const drawer = document.getElementById("drawer");
+  drawer.innerHTML = `
+    <div class="drawer-head">
+      <div>
+        <h3>${escapeText(analysis.matchId)}</h3>
+        <div class="drawer-meta"><span style="color:${colorOf(analysis.gameId)}">${analysis.gameId}</span>${statusChip(analysis.status)}<span>Ganador: ${analysis.winnerPlayerId ? `<a class="player-link" data-player="${escapeText(analysis.winnerPlayerId)}">${escapeText(analysis.winnerPlayerId)}</a>` : "no declarado"}</span></div>
+      </div>
+      <button class="button" id="closeDrawer">Cerrar</button>
+    </div>
+    <div class="tiles four">
+      <div class="tile"><div class="tile-label">Duración</div><div class="tile-value">${formatNumber(analysis.durationSeconds)} s</div></div>
+      <div class="tile"><div class="tile-label">Eventos</div><div class="tile-value">${formatNumber(analysis.totalEvents)}</div></div>
+      <div class="tile"><div class="tile-label">Jugadores</div><div class="tile-value">${analysis.players.length}</div></div>
+      <div class="tile"><div class="tile-label">Patrones</div><div class="tile-value">${analysis.patterns.length}</div></div>
+    </div>
+    <h4>Métricas de la partida</h4>
+    <div class="tiles">${Object.entries(analysis.matchMetrics).map(([name, value]) => `<div class="tile"><div class="tile-label">${name}</div><div class="tile-value">${formatNumber(value)}</div></div>`).join("") || '<div class="empty" style="grid-column:1/-1;margin:0">Sin métricas propias del juego.</div>'}</div>
+    <h4>Comparar jugadores</h4>
+    ${names.length ? `<div class="toolbar"><select id="metricSelect">${names.map((name) => `<option value="${name}" ${name === state.openMetric ? "selected" : ""}>${name}</option>`).join("")}</select></div>
+    <div class="bars">${metricValues.map(([playerId, value]) => `<div class="bar-row" style="grid-template-columns:110px 1fr 90px"><a class="player-link" data-player="${escapeText(playerId)}">${escapeText(playerId)}</a><div class="bar-track"><div class="bar-fill" style="width:${Math.max(0, (value / largest) * 100)}%"></div></div><span class="bar-value">${formatNumber(value)}</span></div>`).join("")}</div>` : '<div class="empty">Esta partida no tiene métricas por jugador.</div>'}
+    <h4>Jugadores</h4>
+    <div class="table-wrap"><table><thead><tr><th>Jugador</th><th class="num">Eventos</th>${names.map((name) => `<th class="num">${name}</th>`).join("")}</tr></thead><tbody>
+      ${analysis.players.map((player) => `<tr><td><a class="player-link" data-player="${escapeText(player.playerId)}">${escapeText(player.playerId)}</a></td><td class="num">${player.eventCount}</td>${names.map((name) => `<td class="num">${name in player.metrics ? formatNumber(player.metrics[name]) : "-"}</td>`).join("")}</tr>`).join("")}
+    </tbody></table></div>
+    <h4>Patrones de esta partida</h4>
+    ${analysis.patterns.map((pattern) => `<div class="pattern-item"><div class="pattern-title"><span class="chip info">${pattern.name}</span><a class="player-link" data-player="${escapeText(pattern.playerId)}">${escapeText(pattern.playerId)}</a></div><div class="pattern-detail">${detailText(pattern.details)}</div></div>`).join("") || '<div class="empty">No se detectó ningún patrón en esta partida.</div>'}
+    ${playerAggregate ? renderPlayerBlock(playerAggregate) : ""}`;
+  document.getElementById("closeDrawer").addEventListener("click", closeDrawer);
+  const metricSelect = document.getElementById("metricSelect");
+  if (metricSelect) metricSelect.addEventListener("change", (event) => { state.openMetric = event.target.value; renderDrawer(analysis, playerAggregate); });
+  drawer.querySelectorAll("[data-player]").forEach((link) => link.addEventListener("click", async () => {
+    const aggregate = await fetchJson("/stats/players/" + encodeURIComponent(link.dataset.player));
+    renderDrawer(analysis, aggregate);
+    drawer.scrollTo({ top: drawer.scrollHeight, behavior: "smooth" });
+  }));
+};
+
+const renderPlayerBlock = (aggregate) => {
+  const names = Object.keys(aggregate.aggregates).sort();
+  const summary = names.filter((name) => name === "matchesPlayed" || name === "wins" || name.startsWith("patternCount_"));
+  const tiles = (list) => list.map((name) => `<div class="tile"><div class="tile-label">${aggregateLabel(name)}</div><div class="tile-value">${formatNumber(aggregate.aggregates[name])}</div></div>`).join("");
+  return `<h4>Jugador ${escapeText(aggregate.playerId)} en todas sus partidas</h4>
+    <div class="sub" style="color:var(--muted)">Partidas: ${aggregate.matchIds.map(escapeText).join(", ")}</div>
+    <div class="tiles">${tiles(summary)}</div>
+    <details><summary>Ver los ${names.length} agregados</summary><div class="tiles">${tiles(names)}</div></details>`;
+};
+
+const openMatch = async (matchId) => {
+  try {
+    const analysis = await fetchJson("/stats/matches/" + encodeURIComponent(matchId));
+    renderDrawer(analysis, null);
+    document.getElementById("overlay").classList.add("open");
+    document.getElementById("drawer").classList.add("open");
+  } catch (failure) {
+    showError(failure);
+  }
+};
+
+const showError = (failure) => {
+  document.getElementById("message").innerHTML = `<div class="error">No se pudieron cargar los datos: ${escapeText(failure.message)}</div>`;
+};
+
+const renderAll = () => {
+  renderChrome();
+  setView(state.view);
+  renderOverview();
+  renderMatchesView();
+  renderPatternsView();
+  renderGamesView();
+};
+
+const loadAll = async () => {
+  try {
+    const [matches, patterns] = await Promise.all([fetchJson("/stats/matches"), fetchJson("/patterns")]);
+    const gameIds = [...new Set(matches.map((match) => match.gameId))].sort();
+    const aggregates = await Promise.all(gameIds.map((gameId) => fetchJson("/stats/games/" + encodeURIComponent(gameId))));
+    state.matches = matches;
+    state.patterns = patterns;
+    state.games = Object.fromEntries(gameIds.map((gameId, position) => [gameId, aggregates[position].aggregates]));
+    document.getElementById("message").innerHTML = "";
+    document.getElementById("updated").textContent = "Actualizado a las " + new Date().toLocaleTimeString("es-CR");
+    renderAll();
+  } catch (failure) {
+    showError(failure);
+  }
+};
+
+document.getElementById("refresh").addEventListener("click", loadAll);
+document.getElementById("overlay").addEventListener("click", closeDrawer);
+document.addEventListener("keydown", (event) => { if (event.key === "Escape") closeDrawer(); });
+document.getElementById("auto").addEventListener("change", (event) => {
+  clearInterval(state.timer);
+  if (event.target.checked) state.timer = setInterval(loadAll, 5000);
+});
+
+renderAll();
+loadAll();
+</script>
+</body>
+</html>

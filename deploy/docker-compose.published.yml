@@ -6,8 +6,11 @@ services:
     mem_limit: 1g
     environment:
       PORT: "8081"
+      RESULTS_DIRECTORY: /data/results
     ports:
       - "8081:8081"
+    volumes:
+      - analytics-data:/data/results
     restart: unless-stopped
 
   ingest-go:
@@ -19,12 +22,14 @@ services:
       MATCH_IDLE_TIMEOUT_SECONDS: ${MATCH_IDLE_TIMEOUT_SECONDS:-30}
       MATCH_FINISH_GRACE_MILLISECONDS: ${MATCH_FINISH_GRACE_MILLISECONDS:-500}
       REJECTED_EVENTS_PATH: /data/rejected-events.log
+      INBOX_DIRECTORY: /inbox
       ANALYTICS_MAX_ATTEMPTS: ${ANALYTICS_MAX_ATTEMPTS:-6}
       ANALYTICS_INITIAL_BACKOFF_MILLISECONDS: ${ANALYTICS_INITIAL_BACKOFF_MILLISECONDS:-500}
     ports:
       - "8080:8080"
     volumes:
       - ingest-data:/data
+      - inbox-data:/inbox
     depends_on:
       analytics-scala:
         condition: service_healthy
@@ -41,6 +46,9 @@ services:
       SIMULATOR_SEED: ${SIMULATOR_SEED:-42}
       SIMULATOR_MATCHES_PER_GAME: ${SIMULATOR_MATCHES_PER_GAME:-0}
       SIMULATOR_EVENTS_PER_SECOND: ${SIMULATOR_EVENTS_PER_SECOND:-0}
+      SIMULATOR_OUTPUT_DIRECTORY: ${SIMULATOR_OUTPUT_DIRECTORY:-}
+    volumes:
+      - inbox-data:/inbox
     depends_on:
       ingest-go:
         condition: service_healthy
@@ -48,3 +56,5 @@ services:
 
 volumes:
   ingest-data:
+  analytics-data:
+  inbox-data:

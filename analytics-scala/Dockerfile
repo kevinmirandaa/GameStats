@@ -13,10 +13,12 @@ RUN sbt -batch stage
 
 FROM eclipse-temurin:21-jre-jammy
 RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/* \
-    && useradd --system --uid 10001 analytics
+    && useradd --system --uid 10001 analytics \
+    && mkdir -p /data/results && chown analytics /data/results
 USER analytics
 COPY --from=build /source/target/universal/stage /opt/analytics
-ENV PORT=8081
+ENV PORT=8081 \
+    RESULTS_DIRECTORY=/data/results
 EXPOSE 8081
 HEALTHCHECK --interval=5s --timeout=3s --retries=12 CMD curl -fs http://localhost:8081/health || exit 1
 ENTRYPOINT ["/opt/analytics/bin/analytics-scala"]

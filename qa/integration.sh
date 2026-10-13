@@ -350,6 +350,8 @@ equals "caida corta: sin fallos de entrega registrados" "$failed_before" "$(metr
 echo
 echo "12. Scala caido durante un envio: caida larga (mas que la ventana de reintentos)"
 long_match="match-chess-$run_id-outage-long"
+matches_before_restart="$(matches_of_run "$run_id")"
+check "antes del reinicio de Scala hay partidas guardadas ($matches_before_restart)" "$([ "$matches_before_restart" -gt 0 ] && echo true || echo false)"
 build_events --game chess --match "$long_match" --players ana,beto --actions MOVE,CAPTURE --count 10 > "$work_directory/outage-long.json"
 "${compose[@]}" stop analytics-scala >/dev/null 2>&1
 post_batch_file "$work_directory/outage-long.json" >/dev/null
@@ -364,7 +366,7 @@ python3 -I "$builder" --game chess --match "$long_match" --players ana,beto --ac
 post_batch_file "$work_directory/outage-long-retry.json" >/dev/null
 equals "caida larga: reenviar la misma partida es rechazado (sin recuperacion)" 14 "$(( $(batch_field rejected) + $(batch_field accepted) ))"
 equals "caida larga: el reenvio no acepta ningun evento" 0 "$(batch_field accepted)"
-equals "reinicio de Scala: se pierde el historial en memoria (partidas guardadas antes)" 0 "$(matches_of_run "$run_id")"
+equals "reinicio de Scala: el historial se conserva en el volumen de resultados" "$matches_before_restart" "$(matches_of_run "$run_id")"
 
 echo
 ingest_image_after="$(docker images -q gamestats-ingest:local)"

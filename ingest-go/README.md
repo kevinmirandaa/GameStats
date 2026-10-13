@@ -22,6 +22,18 @@ POST /events  ->  validar sobre  ->  deduplicar eventId  ->  Registry.Submit
 - `POST /events/batch` lista de eventos. 200 con `{accepted, rejected, errors}`.
 - `GET /health`, `GET /metrics`, `GET /rejected`.
 
+## Entrada por carpeta de archivos
+
+Ademas de HTTP, Go puede vigilar una carpeta donde cualquier fuente deja archivos con eventos (en Docker, el volumen `/inbox`; ver `deploy/INBOX.md`). Se activa con `INBOX_DIRECTORY` y usa el mismo pipeline (validacion, deduplicacion, una goroutine por partida), asi que el resultado es identico al de HTTP.
+
+| Archivo | Como se lee |
+|---|---|
+| `.jsonl` o `.ndjson` | Un evento JSON por linea. El archivo puede seguir creciendo: Go lee solo las lineas nuevas y completas |
+| `.json` | Un arreglo de eventos, un objeto con un arreglo `events` (como los ejemplos de `contracts/examples/games`) o un solo evento. Se lee cuando el archivo deja de cambiar y despues se mueve a `processed/` |
+| `.json` invalido | Se mueve a `failed/` y se registra en `/rejected` |
+
+Los archivos ocultos, los temporales (`.tmp`, `.part`) y las subcarpetas se ignoran. `/metrics` informa `filesProcessed`, `filesFailed` y `eventsAcceptedByGame`.
+
 ## Variables de entorno
 
 | Variable | Defecto |
@@ -35,6 +47,8 @@ POST /events  ->  validar sobre  ->  deduplicar eventId  ->  Registry.Submit
 | ANALYTICS_INITIAL_BACKOFF_MILLISECONDS | 200 |
 | ANALYTICS_REQUEST_TIMEOUT_SECONDS | 10 |
 | MATCH_INBOX_CAPACITY | 1024 |
+| INBOX_DIRECTORY | vacio (desactivado) |
+| INBOX_POLL_INTERVAL_MILLISECONDS | 1000 |
 
 ## Comportamiento de partidas
 
