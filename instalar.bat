@@ -24,12 +24,10 @@ if not "%1"=="sindemo" (
 )
 
 echo.
-echo ==============================================================
 echo    GameStats esta listo. Abre el panel de resultados aqui:
 echo.
 echo                  http://localhost:8081
 echo.
-echo ==============================================================
 echo Para detener: detener.bat
 echo.
 

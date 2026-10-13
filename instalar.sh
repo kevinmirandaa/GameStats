@@ -23,12 +23,10 @@ if [ "${1:-}" != "--sin-demo" ]; then
 fi
 
 echo
-echo "=============================================================="
-echo "   GameStats esta listo. Abre el panel de resultados aqui:"
+echo "GameStats esta listo. Abre el panel de resultados aqui:"
 echo
-echo "                 http://localhost:8081"
+echo "    http://localhost:8081"
 echo
-echo "=============================================================="
 echo "Para detener:  ./detener.sh"
 echo
 
