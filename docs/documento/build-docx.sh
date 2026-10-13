@@ -3,7 +3,7 @@ set -euo pipefail
 
 source_directory="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 output_docx="${1:-$source_directory/GameStats_Documentacion.docx}"
-professor_name="${PROFESOR:-(nombre del profesor)}"
+professor_name="${PROFESOR:-Oscar Víquez Acuña}"
 work_directory="$(mktemp -d)"
 
 if [ ! -d "$source_directory/tools/docx/node_modules/docx" ]; then

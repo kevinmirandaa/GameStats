@@ -3,7 +3,7 @@ set -euo pipefail
 
 source_directory="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 output_pdf="${1:-$source_directory/GameStats_Documentacion.pdf}"
-professor_name="${PROFESOR:-(nombre del profesor)}"
+professor_name="${PROFESOR:-Oscar Víquez Acuña}"
 work_directory="$(mktemp -d)"
 
 python3 - "$source_directory/documentacion.html" "$source_directory/.documento-temporal.html" "$professor_name" <<'PYTHON'
