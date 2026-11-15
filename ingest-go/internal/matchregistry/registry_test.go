@@ -253,3 +253,37 @@ func assertSortedAndOwnedBy(t *testing.T, batch event.MatchBatch) {
 		}
 	}
 }
+
+func TestActiveMatchesAreCountedPerGame(t *testing.T) {
+	dispatcher := newCollectingDispatcher()
+	settings := fastSettings()
+	settings.IdleTimeout = 5 * time.Second
+	registry := matchregistry.New(dispatcher, &metrics.Counters{}, settings)
+
+	racing := eventAt("match-r1", "r1-a", 0, event.MatchStarted)
+	otherRacing := eventAt("match-r2", "r2-a", 0, event.MatchStarted)
+	combat := eventAt("match-c1", "c1-a", 0, event.MatchStarted)
+	combat.GameId = "combat"
+	for _, started := range []event.Event{racing, otherRacing, combat} {
+		if err := registry.Submit(started); err != nil {
+			t.Fatalf("submit failed: %v", err)
+		}
+	}
+
+	byGame := registry.ActiveMatchesByGame()
+	if byGame["racing"] != 2 || byGame["combat"] != 1 || len(byGame) != 2 {
+		t.Fatalf("unexpected active matches per game %v", byGame)
+	}
+
+	if err := registry.Submit(eventAt("match-r1", "r1-b", 1, event.MatchFinished)); err != nil {
+		t.Fatalf("submit failed: %v", err)
+	}
+	dispatcher.waitForBatches(t, 1)
+	deadline := time.Now().Add(2 * time.Second)
+	for registry.ActiveMatchesByGame()["racing"] != 1 && time.Now().Before(deadline) {
+		time.Sleep(10 * time.Millisecond)
+	}
+	if registry.ActiveMatchesByGame()["racing"] != 1 {
+		t.Fatalf("a finished match must leave the active count but got %v", registry.ActiveMatchesByGame())
+	}
+}

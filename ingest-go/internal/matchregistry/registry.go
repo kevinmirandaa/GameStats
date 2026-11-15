@@ -82,6 +82,16 @@ func (registry *Registry) ActiveMatches() int {
 	return len(registry.activeWorkers)
 }
 
+func (registry *Registry) ActiveMatchesByGame() map[string]int {
+	registry.mutex.Lock()
+	defer registry.mutex.Unlock()
+	byGame := make(map[string]int)
+	for _, worker := range registry.activeWorkers {
+		byGame[worker.gameId]++
+	}
+	return byGame
+}
+
 func (registry *Registry) Shutdown(ctx context.Context) error {
 	registry.mutex.Lock()
 	if !registry.shuttingDown {
