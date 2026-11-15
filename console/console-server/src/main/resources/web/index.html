@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GameConsole</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-mark">GC</div>
+    <div>
+      <div class="brand-name">GameConsole</div>
+      <div class="brand-sub">Consola web de videojuegos</div>
+    </div>
+  </div>
+  <nav class="tabs" id="main-tabs">
+    <button class="tab active" data-view="console">Consola</button>
+    <button class="tab" data-view="panel">Panel de estadisticas</button>
+  </nav>
+  <div class="chips" id="status-chips"></div>
+</header>
+
+<main>
+  <section id="view-console" class="view">
+    <aside class="catalog">
+      <h2>Juegos</h2>
+      <div id="catalog" class="catalog-list"></div>
+      <h2 class="spaced">Partidas en el servidor</h2>
+      <div id="server-sessions" class="server-sessions"></div>
+    </aside>
+    <section class="workspace">
+      <div id="session-tabs" class="session-tabs"></div>
+      <div id="game-area" class="game-area"></div>
+    </section>
+  </section>
+
+  <section id="view-panel" class="view" hidden>
+    <div class="panel-head">
+      <div>
+        <h1>Estadisticas de GameStats</h1>
+        <p>Los valores provienen de GameStats. La consola solo los consulta y los presenta.</p>
+      </div>
+      <label class="switch"><input type="checkbox" id="auto-refresh" checked> Actualizar cada 2 s</label>
+    </div>
+    <h2 class="block-title">Resultados generales</h2>
+    <div id="general-cards" class="cards"></div>
+    <h2 class="block-title">Instancias por juego</h2>
+    <div id="instances-chart" class="bars"></div>
+    <h2 class="block-title">Resultados por juego</h2>
+    <div id="game-cards" class="game-cards"></div>
+    <h2 class="block-title">Partidas analizadas</h2>
+    <div class="filter-row">
+      <select id="match-filter"><option value="">Todos los juegos</option></select>
+    </div>
+    <div id="match-table" class="table-wrap"></div>
+  </section>
+</main>
+
+<dialog id="new-game-dialog">
+  <form method="dialog" id="new-game-form">
+    <h3 id="dialog-title"></h3>
+    <p id="dialog-description" class="muted"></p>
+    <label>Modo
+      <select id="dialog-mode"></select>
+    </label>
+    <div id="dialog-players"></div>
+    <div id="dialog-options"></div>
+    <div class="dialog-actions">
+      <button type="button" id="dialog-cancel" class="ghost">Cancelar</button>
+      <button type="submit" class="primary">Iniciar partida</button>
+    </div>
+  </form>
+</dialog>
+
+<div id="toast" class="toast" hidden></div>
+<script src="app.js"></script>
+</body>
+</html>
