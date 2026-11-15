@@ -29,6 +29,10 @@ class AnalyticsRoutes(service: AnalyticsService)(using castor.Context, cask.Logg
   def matches(gameId: Option[String] = None): cask.Response[String] =
     json(200, ujson.Arr.from(service.matchSummaries(gameId).map(AnalysisEncoder.matchSummary)))
 
+  @cask.get("/stats/overview")
+  def overview(): cask.Response[String] =
+    json(200, AnalysisEncoder.overview(service.overview))
+
   @cask.get("/stats/matches/:matchId")
   def matchById(matchId: String): cask.Response[String] =
     found(service.matchAnalysis(matchId).map(AnalysisEncoder.matchAnalysis), s"match $matchId was not analyzed")

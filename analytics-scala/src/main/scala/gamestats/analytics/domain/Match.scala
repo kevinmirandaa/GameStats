@@ -67,3 +67,22 @@ final case class MatchSummary(
 final case class PlayerAggregate(playerId: String, matchIds: List[String], aggregates: Map[String, Double])
 
 final case class GameAggregate(gameId: String, aggregates: Map[String, Double])
+
+final case class GameOverview(
+    gameId: String,
+    matches: Int,
+    completed: Int,
+    incomplete: Int,
+    totalEvents: Int,
+    playerCount: Int,
+    averageDurationSeconds: Double
+)
+
+final case class Overview(
+    totalMatches: Int,
+    completedMatches: Int,
+    incompleteMatches: Int,
+    totalEvents: Int,
+    playerCount: Int,
+    games: List[GameOverview]
+)

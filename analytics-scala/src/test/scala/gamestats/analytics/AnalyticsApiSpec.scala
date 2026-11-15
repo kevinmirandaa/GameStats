@@ -55,6 +55,17 @@ class AnalyticsApiSpec extends munit.FunSuite:
     assert(response.body().contains("/stats/matches"))
   }
 
+  test("the overview reports the analyzed matches and their games") {
+    post("/analyze", toyBatchJson("api-overview-1", "p1", 3))
+
+    val answer = get("/stats/overview")
+
+    assertEquals(answer.status, 200)
+    assert(answer.body("totalMatches").num >= 1)
+    assert(answer.body("games").arr.exists(_("gameId").str == "toy"))
+    assert(answer.body("games").arr.forall(game => game.obj.contains("matches") && game.obj.contains("averageDurationSeconds")))
+  }
+
   test("health answers UP") {
     val answer = get("/health")
     assertEquals(answer.status, 200)

@@ -1,6 +1,6 @@
 package gamestats.analytics.service
 
-import gamestats.analytics.aggregation.{GameAggregation, PlayerAggregation}
+import gamestats.analytics.aggregation.{GameAggregation, OverviewAggregation, PlayerAggregation}
 import gamestats.analytics.analysis.{GameAnalyzerRegistry, MatchAnalysisPipeline}
 import gamestats.analytics.decoding.BatchDecoder
 import gamestats.analytics.domain.*
@@ -33,6 +33,8 @@ final class AnalyticsService(registry: GameAnalyzerRegistry, store: AnalysisStor
 
   def playerAggregate(playerId: String): Option[PlayerAggregate] =
     PlayerAggregation.aggregate(playerId, store.all)
+
+  def overview: Overview = OverviewAggregation.overview(store.all)
 
   def gameAggregate(gameId: String): Option[GameAggregate] =
     GameAggregation.aggregate(gameId, store.all)

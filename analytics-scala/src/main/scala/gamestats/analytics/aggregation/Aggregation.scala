@@ -54,3 +54,29 @@ object GameAggregation:
       gameId = gameId,
       aggregates = totals ++ MetricStatistics.summarize(series) ++ MetricStatistics.patternCounts(gameAnalyses.flatMap(_.patterns))
     )
+
+object OverviewAggregation:
+
+  def overview(analyses: List[MatchAnalysis]): Overview =
+    Overview(
+      totalMatches = analyses.size,
+      completedMatches = analyses.count(_.status == MatchStatus.Completed),
+      incompleteMatches = analyses.count(_.status == MatchStatus.Incomplete),
+      totalEvents = analyses.map(_.totalEvents).sum,
+      playerCount = distinctPlayers(analyses),
+      games = analyses.groupBy(_.gameId).toList.sortBy(_._1).map((gameId, gameAnalyses) => gameOverview(gameId, gameAnalyses))
+    )
+
+  private def distinctPlayers(analyses: List[MatchAnalysis]): Int =
+    analyses.flatMap(_.players.map(_.playerId)).distinct.size
+
+  private def gameOverview(gameId: String, analyses: List[MatchAnalysis]): GameOverview =
+    GameOverview(
+      gameId = gameId,
+      matches = analyses.size,
+      completed = analyses.count(_.status == MatchStatus.Completed),
+      incomplete = analyses.count(_.status == MatchStatus.Incomplete),
+      totalEvents = analyses.map(_.totalEvents).sum,
+      playerCount = distinctPlayers(analyses),
+      averageDurationSeconds = analyses.map(_.durationSeconds).sum / analyses.size
+    )
