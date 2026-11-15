@@ -4,8 +4,6 @@ Thumbs.db
 .idea/
 .vscode/
 .fleet/
-.antigravity/
-.claude/settings.local.json
 *.iml
 *.swp
 
@@ -33,9 +31,12 @@ rejected-events.log
 deploy/.env
 node_modules/
 
-entregables/GameStats_Codigo.zip
-estudio/
 
-entregables/.DS_Store
 
 /inbox/
+
+console/target/
+console/*/target/
+docs/documento-consola/.documento-temporal.html
+entregables-proyecto2/*.zip
+__pycache__/

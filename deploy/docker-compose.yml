@@ -21,7 +21,7 @@ services:
     environment:
       PORT: "8080"
       ANALYTICS_URL: http://analytics-scala:8081
-      MATCH_IDLE_TIMEOUT_SECONDS: ${MATCH_IDLE_TIMEOUT_SECONDS:-30}
+      MATCH_IDLE_TIMEOUT_SECONDS: ${MATCH_IDLE_TIMEOUT_SECONDS:-1800}
       MATCH_FINISH_GRACE_MILLISECONDS: ${MATCH_FINISH_GRACE_MILLISECONDS:-500}
       REJECTED_EVENTS_PATH: /data/rejected-events.log
       INBOX_DIRECTORY: /inbox
@@ -37,6 +37,45 @@ services:
         condition: service_healthy
     stop_grace_period: 50s
     restart: unless-stopped
+
+  prolog-ai:
+    build: ../prolog-ai
+    image: gamestats-prolog:local
+    mem_limit: 512m
+    restart: unless-stopped
+
+  console:
+    build: ../console
+    image: gamestats-console:local
+    mem_limit: 768m
+    environment:
+      PORT: "8100"
+      GAMESTATS_INGEST_URL: http://ingest-go:8080
+      GAMESTATS_ANALYTICS_URL: http://analytics-scala:8081
+      PROLOG_URL: http://prolog-ai:8090
+      IDLE_SESSION_MINUTES: ${IDLE_SESSION_MINUTES:-20}
+    ports:
+      - "8100:8100"
+    depends_on:
+      ingest-go:
+        condition: service_healthy
+      analytics-scala:
+        condition: service_healthy
+      prolog-ai:
+        condition: service_healthy
+    stop_grace_period: 30s
+    restart: unless-stopped
+
+  demo:
+    build: ../demo
+    image: gamestats-demo:local
+    profiles: ["demo"]
+    environment:
+      CONSOLE_URL: http://console:8100
+    depends_on:
+      console:
+        condition: service_healthy
+    restart: "no"
 
   simulator:
     build: ../simulator

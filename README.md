@@ -1,63 +1,69 @@
-# GameStats
+# GameStats y GameConsole
 
-Plataforma multilenguaje para recibir, validar y analizar eventos de partidas de videojuegos.
+Proyectos 1 y 2 del curso de Lenguajes de Programación, Instituto Tecnológico de Costa Rica.
 
-Proyecto del curso de Lenguajes de Programacion. Entrega: 18 de octubre de 2026.
-
-## Idea central
-
-La generacion de eventos esta separada de su analisis. Una fuente externa (hoy un simulador, mañana juegos reales) envia eventos por HTTP. Go los recibe (HTTP o carpeta vigilada), valida y organiza por partida. Scala los transforma de forma funcional en estadisticas y patrones.
+- **GameStats** (Proyecto 1) recibe eventos de partidas, los valida y los agrupa con Go, y los convierte en estadísticas y patrones con Scala.
+- **GameConsole** (Proyecto 2) es una consola web con tres videojuegos orientados a objetos en Java, una inteligencia en Prolog, y un panel que muestra las estadísticas que calcula GameStats.
 
 ```
-Fuente de eventos (simulador o juego)
-        |
-        |  POST /events  (JSON)
-        v
-ingest-go  :8080     imperativo   ingesta, validacion, estado por partida, concurrencia
-        |
-        |  POST /analyze  (partida completa y ordenada)
-        v
-analytics-scala  :8081     funcional   metricas, patrones, consulta de resultados
-        |
-        |  GET /stats/...
-        v
-Consulta
+Navegador
+   |  http://localhost:8100
+   v
+console (Java)  ----- POST /decide ----->  prolog-ai (SWI-Prolog)
+   |  juegos como plugins JAR
+   |  POST /events (concurrente, por partida)
+   v
+ingest-go (Go)  :8080      validación, estado por partida, concurrencia
+   |  POST /analyze
+   v
+analytics-scala (Scala)  :8081      métricas, patrones, estadísticas
+   ^
+   |  GET /stats/...   (el panel de la consola solo consulta)
+console
 ```
-
-## Modulos
-
-- `ingest-go/` modulo Go de ingesta.
-- `analytics-scala/` modulo Scala de analisis.
-- `simulator/` fuente de eventos simulada.
-- `contracts/` esquema del evento, ejemplos y contratos por juego.
-- `deploy/` Docker Compose y despliegue.
-- `qa/` pruebas de integracion y de humo.
-- `docs/` documentacion.
-- `agents/`, `prompts/`, `reports/` forma de trabajo con agentes de IA.
-- `project/` enunciado original.
-
-## Documentacion
-
-- [Blueprint](docs/BLUEPRINT.md) arquitectura y contratos.
-- [Decisiones](docs/DECISIONS.md) por que se eligio cada cosa.
-- [Agregar un juego](docs/ADDING_A_GAME.md) como conectar un juego nuevo.
-- [Guia de Git](docs/GIT_GUIDE.md) comandos usados en el proyecto.
-- [Despliegue](deploy/DEPLOY.md) pipelines y como levantar el sistema.
-- [Estadisticas](docs/STATS.md) metricas y reglas de cada juego.
-
-## Estado
-
-Proyecto completo: módulos Go y Scala, simulador, Docker Compose, CI/CD y despliegue. Ver `docs/documento/` para el documento entregable y `deploy/DEPLOY.md` para el despliegue.
 
 ## Ejecutar
 
-Solo con Docker: `./instalar.sh` (macOS y Linux) o `instalar.bat` (Windows); abrir luego http://localhost:8081. Con make:
+Requisito único: Docker con Compose (Docker Desktop).
 
 ```bash
-make up
-make simulate
-curl localhost:8081/stats/matches
-make down
+./instalar.sh            # macOS y Linux
+instalar.bat             # Windows
+./detener.sh             # detener (detener.bat en Windows)
 ```
 
-Los resultados también se ven en el navegador, en `http://localhost:8081` (panel web), después de `make simulate`.
+El instalador construye todo, juega partidas de demostración y abre la consola.
+
+| Qué | Dirección |
+|---|---|
+| Consola de juegos | http://localhost:8100 |
+| Panel de estadísticas | http://localhost:8100/#panel |
+| Panel propio de GameStats | http://localhost:8081 |
+
+## Estructura
+
+| Carpeta | Contenido |
+|---|---|
+| `console/` | GameConsole en Java: API común, tres juegos y servidor web |
+| `prolog-ai/` | Servicio de inteligencia en SWI-Prolog |
+| `demo/` | Cliente que juega partidas de demostración por la API de la consola |
+| `ingest-go/` | Módulo Go de GameStats |
+| `analytics-scala/` | Módulo Scala de GameStats |
+| `simulator/` | Fuente de eventos simulada de GameStats |
+| `contracts/` | Esquema del evento y contratos de cada juego |
+| `deploy/` | Docker Compose |
+| `qa/` | Pruebas de humo, integración, extremo a extremo y estándares |
+| `.github/workflows/` | CI y CD |
+| `docs/` | Decisiones, estadísticas y cómo agregar un juego |
+
+## Pruebas
+
+```bash
+make test        # Go, Scala, Java (en Docker) y Prolog (en Docker)
+make smoke       # GameStats de extremo a extremo
+make e2e         # GameConsole de extremo a extremo (con el sistema levantado)
+```
+
+## Repositorio
+
+https://github.com/kevinmirandaa/GameStats

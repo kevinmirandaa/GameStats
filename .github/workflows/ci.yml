@@ -57,6 +57,32 @@ jobs:
       - name: Empaquetar
         run: sbt -batch stage
 
+  console-module:
+    name: Java console
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: console
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+      - name: Compilar y probar
+        run: mvn -B verify
+
+  prolog-module:
+    name: Prolog prolog-ai
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Pruebas plunit dentro de la imagen
+        run: docker build --target verified -t gamestats-prolog-test prolog-ai
+
   coding-standards:
     name: Estandares de codigo
     runs-on: ubuntu-latest
@@ -68,7 +94,7 @@ jobs:
 
   containers-and-smoke-test:
     name: Contenedores y prueba de humo
-    needs: [go-modules, scala-module]
+    needs: [go-modules, scala-module, console-module, prolog-module]
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -81,3 +107,24 @@ jobs:
       - name: Registros de los contenedores
         if: failure()
         run: docker compose -f deploy/docker-compose.yml --profile simulation logs --no-color
+
+  console-end-to-end:
+    name: Consola integrada de extremo a extremo
+    needs: [go-modules, scala-module, console-module, prolog-module]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: Construir y levantar el sistema completo
+        run: docker compose -f deploy/docker-compose.yml up -d --build --wait
+      - name: Partidas de demostracion a traves de la consola
+        run: docker compose -f deploy/docker-compose.yml --profile demo run --rm demo
+      - name: Prueba de extremo a extremo
+        run: python3 qa/console_e2e.py
+      - name: Registros de los contenedores
+        if: failure()
+        run: docker compose -f deploy/docker-compose.yml --profile demo logs --no-color
+      - name: Detener
+        if: always()
+        run: docker compose -f deploy/docker-compose.yml --profile demo down --volumes --remove-orphans

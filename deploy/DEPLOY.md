@@ -2,7 +2,7 @@
 
 ## Entorno definido
 
-El entorno de GameStats es **Docker Compose con imagenes publicadas en GitHub Container Registry (GHCR)**. Los tres servicios (analytics-scala, ingest-go y simulator) se descargan como imagenes ya construidas y se levantan juntos con `deploy/docker-compose.published.yml`.
+El entorno de GameStats es **Docker Compose con imagenes publicadas en GitHub Container Registry (GHCR)**. Los servicios (analytics-scala, ingest-go, simulator, console, prolog-ai y demo) se descargan como imagenes ya construidas y se levantan juntos con `deploy/docker-compose.published.yml`.
 
 El pipeline despliega ese entorno de forma automatica en cada cambio unido a `main` y comprueba que funciona. El mismo archivo sirve para levantar el sistema en cualquier maquina con Docker.
 
@@ -17,14 +17,17 @@ Estan en `.github/workflows/`.
 | Go ingest-go y simulator | Revisa el formato, ejecuta `go vet` y `go test -race` |
 | Scala analytics-scala | Compila, ejecuta las pruebas de munit y empaqueta |
 | Estandares de codigo | Ejecuta `qa/check-standards.sh` (comentarios, emojis, `var`, `null`, errores ignorados) |
-| Contenedores y prueba de humo | Construye las tres imagenes con Docker, levanta el sistema con Compose y ejecuta `qa/smoke.sh` |
+| Java console | Compila y ejecuta las pruebas de los modulos Java con Maven |
+| Prolog prolog-ai | Construye la imagen de Prolog, que ejecuta las pruebas plunit y falla si alguna no pasa |
+| Contenedores y prueba de humo | Construye las imagenes con Docker, levanta el sistema con Compose y ejecuta `qa/smoke.sh` |
+| Consola integrada de extremo a extremo | Levanta todo, juega la demostracion y ejecuta `qa/console_e2e.py` (75 verificaciones) |
 
-El ultimo trabajo solo corre si pasan los de Go y Scala.
+Los dos ultimos trabajos solo corren si pasan los de Go, Scala, Java y Prolog.
 
 ### CD (`cd.yml`): al unir un cambio a main
 
-1. **Publicar**: construye las tres imagenes y las sube a `ghcr.io/<usuario>/gamestats-ingest`, `gamestats-analytics` y `gamestats-simulator`, cada una con dos etiquetas: el identificador completo del commit (`<sha>`) y `latest`.
-2. **Desplegar y verificar** (solo si el trabajo anterior termina bien): descarga las imagenes publicadas con la etiqueta del commit, levanta el sistema con `docker-compose.published.yml` y ejecuta `qa/smoke.sh` contra ese despliegue. Si la prueba falla, el trabajo falla y los registros de los contenedores quedan en la ejecucion.
+1. **Publicar**: construye las seis imagenes y las sube a `ghcr.io/<usuario>/gamestats-ingest`, `gamestats-analytics`, `gamestats-simulator`, `gamestats-console`, `gamestats-prolog` y `gamestats-demo`, cada una con dos etiquetas: el identificador completo del commit (`<sha>`) y `latest`.
+2. **Desplegar y verificar** (solo si el trabajo anterior termina bien): descarga las imagenes publicadas con la etiqueta del commit, levanta el sistema con `docker-compose.published.yml` y ejecuta `qa/smoke.sh` contra ese despliegue. Despues juega la demostracion y ejecuta `qa/console_e2e.py` contra la consola desplegada. Si una prueba falla, el trabajo falla y los registros de los contenedores quedan en la ejecucion.
 
 Los trabajos usan el `GITHUB_TOKEN` que GitHub genera solo en cada ejecucion. **No hay secretos que configurar** y no se guarda ninguna credencial en el repositorio.
 
@@ -53,20 +56,20 @@ export GAMESTATS_TAG=latest
 docker compose -f deploy/docker-compose.published.yml up -d --wait
 ```
 
-4. Generar datos y consultar:
+4. Jugar partidas de demostracion y abrir la consola en http://localhost:8100:
 
 ```bash
-docker compose -f deploy/docker-compose.published.yml --profile simulation run --rm simulator
-sleep 10
-curl localhost:8081/stats/matches
+docker compose -f deploy/docker-compose.published.yml --profile demo run --rm demo
 ```
+
+El panel de estadisticas esta en http://localhost:8100/#panel. El simulador original de GameStats sigue disponible con el perfil `simulation`.
 
 Go espera unos segundos tras el fin de cada partida antes de enviarla a Scala, por eso la consulta inmediata puede devolver una lista vacia.
 
 5. Detener:
 
 ```bash
-docker compose -f deploy/docker-compose.published.yml --profile simulation down --volumes
+docker compose -f deploy/docker-compose.published.yml --profile simulation --profile demo down --volumes
 ```
 
 ## Volver a una version anterior

@@ -4,7 +4,7 @@ import sys
 
 REPOSITORY_ROOT = sys.argv[1]
 EXCLUDED_DIRECTORIES = {".git", "target", ".bsp", "node_modules", ".idea", ".metals", ".bloop", "dist"}
-SLASH_STYLE_EXTENSIONS = {".go", ".scala", ".sbt"}
+SLASH_STYLE_EXTENSIONS = {".go", ".scala", ".sbt", ".java", ".js"}
 HASH_STYLE_EXTENSIONS = {".sh", ".yml", ".yaml", ".py"}
 HASH_STYLE_NAMES = {"Dockerfile", "Makefile"}
 MARKDOWN_EXTENSIONS = {".md"}
@@ -154,7 +154,7 @@ def scan_file(path):
     lines = read_lines(path)
     comment_lines = {}
     if kind == "slash":
-        comment_lines = slash_comment_lines(lines, relative.endswith(".go"))
+        comment_lines = slash_comment_lines(lines, relative.endswith((".go", ".js")))
     elif kind == "hash":
         comment_lines = hash_comment_lines(lines, path)
     for number, line in enumerate(lines, 1):

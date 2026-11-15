@@ -241,3 +241,51 @@ Razon: el profesor pidio una instalacion sencilla en una maquina que puede no te
 Decision: `/metrics` de Go informa `eventsAcceptedByGame`.
 
 Razon: el enunciado menciona clasificar los eventos "por partida o juego". Go agrupa por partida y ahora tambien lleva la cuenta por juego, sin interpretar el contenido.
+
+## D40 GameConsole en Java con juegos como plugins
+
+Decision: la consola web es un servidor Java 21 (Javalin) y cada juego es un JAR independiente en la carpeta de plugins. La consola los descubre al arrancar con `URLClassLoader` y `ServiceLoader`, sin conocer sus clases. La interfaz comun esta en el modulo `console-api`.
+
+Razon: el profesor recomendo disenar los juegos como aplicaciones individuales y que la consola permita carga dinamica, de modo que un cuarto juego se agregue sin modificar la consola. Java es ademas el lenguaje orientado a objetos natural para el curso.
+
+## D41 Patrones Adapter y Observer
+
+Decision: cada juego tiene su dominio propio (clases como `Board`, `Card`, `MineField`) y un adaptador que lo convierte a la interfaz comun `GameSession`. `GameSession` es el sujeto de un Observer: la consola registra observadores que traducen los hechos a eventos de GameStats y llevan un registro de actividad.
+
+Razon: el profesor pidio explicar Adapter en la carga dinamica de juegos y que Observer maneje los eventos. Los juegos no conocen GameStats: solo anuncian lo que ocurre.
+
+## D42 Prolog como servicio HTTP con minimax
+
+Decision: SWI-Prolog 9 corre en su propio contenedor y expone `POST /decide`. Recibe el tablero y el nivel de busqueda y devuelve la columna, la puntuacion, los nodos buscados y la puntuacion de cada columna. El algoritmo es negamax con poda alfa-beta y una heuristica de ventanas de cuatro casillas mas pesos por columna.
+
+Razon: un servicio separado se despliega igual en cualquier maquina con Docker, no exige instalar Prolog en el computador y permite reiniciar la inteligencia sin tocar la consola. Las dificultades son profundidades impares (3, 5 y 7) porque las pares sufren efecto de horizonte.
+
+## D43 Eventos compatibles con el contrato 1.0
+
+Decision: los juegos emiten solo los cinco tipos cerrados del contrato. Los hechos propios (MOVE, AI_DECISION, PLAYER_WON, PLAYER_LOST, FLIP_CARD, REVEAL_CELL) son valores de `action` dentro de `GAME_ACTION`. Los resultados llegan en `PLAYER_WON`, `PLAYER_LOST` y `PLAYER_DRAW`, y el ciclo de vida completo (`MATCH_STARTED`, `PLAYER_JOINED`, `PLAYER_LEFT`, `MATCH_FINISHED`) delimita las instancias.
+
+Razon: el enunciado prohibe reemplazar el contrato. Las acciones son abiertas en el contrato, asi que no hizo falta cambiarlo ni tocar Go.
+
+## D44 Envio concurrente por partida
+
+Decision: cada partida tiene una cola ordenada de eventos que un hilo virtual vacia enviando `POST /events` uno a uno, con reintentos y espera creciente (hasta 14 intentos, de 0,5 a 30 segundos, unos cuatro minutos en total) ante 5xx o red caida. Los 4xx no se reintentan. Al apagarse, la consola abandona las partidas abiertas y espera a vaciar las colas.
+
+Razon: una partida lenta o un GameStats caido no deben bloquear las demas partidas ni la interfaz. El orden dentro de una partida se conserva y entre partidas no hay dependencia.
+
+## D45 El panel solo consulta
+
+Decision: el panel llama a la API de la consola, que reenvia sin modificar las respuestas de GameStats (`/stats/overview`, `/stats/games/{id}`, `/stats/matches`, `/metrics`). Se actualiza cada dos segundos. Para ello se agregaron en GameStats `GET /stats/overview` (instancias por juego) y `activeMatchesByGame` en `/metrics` (instancias en curso).
+
+Razon: el enunciado prohibe calcular en la consola lo que GameStats calcula. Las instancias en curso solo las conoce Go, y las finalizadas solo Scala, por eso el panel combina ambas respuestas sin recalcular.
+
+## D46 Tiempo de inactividad de las partidas en Docker Compose
+
+Decision: `MATCH_IDLE_TIMEOUT_SECONDS` vale 1800 en Compose (30 minutos) y la consola abandona las partidas sin actividad a los 20 minutos. Las pruebas automaticas de GameStats lo bajan a 5.
+
+Razon: una persona puede tardar minutos entre jugadas. La consola cierra la partida antes que Go (20 minutos contra 30), asi que el cierre siempre llega a GameStats como MATCH_FINISHED y nunca como una partida incompleta con eventos rechazados.
+
+## D47 Bloqueo de partida con candado y limite de consultas a Prolog
+
+Decision: cada partida usa un `ReentrantLock` en lugar de `synchronized`, y la consola limita a cuatro las consultas simultaneas a Prolog (`PROLOG_MAX_CONCURRENCY`); las demas esperan su turno.
+
+Razon: una prueba de carga con 30 partidas dificiles a la vez mostro que `synchronized` con una llamada HTTP bloqueante dentro fija los hilos portadores de los hilos virtuales y congela toda la consola. El candado no los fija, y el limite evita que Prolog se sature con consultas que la consola ya abandono.
