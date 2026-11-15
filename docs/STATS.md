@@ -233,3 +233,51 @@ Tercer dominio de referencia, solo como propuesta. No tiene escenarios ni se imp
 - Metrica que combina eventos: eficiencia de recursos, porque cruza RESOURCE_GATHERED con OBJECTIVE_COMPLETED.
 - Regla de secuencia: RUSH_OPENING, tres UNIT_TRAINED militares antes del primer BUILDING_COMPLETED economico.
 - Sirve como prueba de que un tercer dominio entra sin cambiar el nucleo: solo requiere un documento en `contracts/games/`, un analizador y un generador del simulador.
+
+## 5. Juegos de GameConsole: connect4, memory y minesweeper
+
+GameConsole (Proyecto 2) emite eventos de tres juegos. Cada uno tiene su analizador en `analytics-scala/src/main/scala/gamestats/analytics/analysis/games`. Los eventos y campos estan en `contracts/games/connect4.md`, `memory.md` y `minesweeper.md`. Las metricas de partida se agregan por juego con promedio, minimo y maximo, como en los demas juegos. Las metricas que valen 1 o 0 (por ejemplo `humanWin`) dan, al promediarse, el porcentaje de partidas.
+
+### connect4
+
+| Alcance | Metrica | Definicion |
+|---|---|---|
+| Partida | totalMoves | Cantidad de eventos MOVE |
+| Partida | aiDecisions | Cantidad de AI_DECISION. Se omite si no hubo computadora |
+| Partida | averageAiNodes | Promedio de `nodesSearched` de las decisiones de Prolog |
+| Partida | averageAiMillis | Promedio de `decisionMillis` |
+| Partida | humanWin, computerWin | 1 si el resultado fue WIN y `winnerKind` es HUMAN o COMPUTER |
+| Partida | drawn, abandoned | 1 si el resultado fue DRAW o ABANDONED |
+| Jugador | moves | MOVE del jugador |
+| Jugador | aiDecisions, averageAiNodes, averageAiMillis | Solo para la computadora |
+| Jugador | won, lost, drawn | 1 si emitio PLAYER_WON, PLAYER_LOST o PLAYER_DRAW |
+
+### memory
+
+| Alcance | Metrica | Definicion |
+|---|---|---|
+| Partida | totalFlips | Cantidad de FLIP_CARD |
+| Partida | pairsFound | Cantidad de PAIR_FOUND |
+| Partida | attempts | PAIR_FOUND mas PAIR_MISSED |
+| Partida | accuracyPercent | pairsFound por 100 entre attempts. Se omite si attempts es 0 |
+| Partida | drawn, abandoned | 1 si el resultado fue DRAW o ABANDONED |
+| Jugador | flips, pairsFound, pairsMissed | Conteos de FLIP_CARD, PAIR_FOUND y PAIR_MISSED del jugador |
+| Jugador | accuracyPercent | pairsFound por 100 entre sus intentos. Se omite si no tuvo intentos |
+| Jugador | won, lost, drawn | Igual que en connect4 |
+
+### minesweeper
+
+| Alcance | Metrica | Definicion |
+|---|---|---|
+| Partida | reveals | Cantidad de REVEAL_CELL |
+| Partida | flagsPlaced | FLAG_CELL con `flagged` verdadero |
+| Partida | cellsRevealed | Suma de `cellsRevealed`, incluida la cascada |
+| Partida | cascades | REVEAL_CELL con `cascade` verdadero |
+| Partida | secondsElapsed | `secondsElapsed` del MATCH_FINISHED. Se omite si la partida no termino |
+| Partida | abandoned | 1 si el resultado fue ABANDONED |
+| Jugador | reveals, flagsPlaced, cellsRevealed | Igual que en la partida pero del jugador |
+| Jugador | won, lost | 1 si emitio PLAYER_WON o PLAYER_LOST |
+
+### Resumen general
+
+`GET /stats/overview` devuelve totalMatches, completedMatches, incompleteMatches, totalEvents, playerCount y, por juego, matches, completed, incomplete, totalEvents, playerCount y averageDurationSeconds. Go informa por separado las partidas abiertas por juego en `/metrics` (`activeMatchesByGame`).

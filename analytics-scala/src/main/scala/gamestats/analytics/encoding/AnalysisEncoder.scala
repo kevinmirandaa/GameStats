@@ -49,7 +49,28 @@ object AnalysisEncoder:
   def patternOccurrence(occurrence: PatternOccurrence): ujson.Value =
     ujson.Obj("matchId" -> occurrence.matchId, "gameId" -> occurrence.gameId, "pattern" -> pattern(occurrence.pattern))
 
+  def overview(overview: Overview): ujson.Value =
+    ujson.Obj(
+      "totalMatches" -> overview.totalMatches,
+      "completedMatches" -> overview.completedMatches,
+      "incompleteMatches" -> overview.incompleteMatches,
+      "totalEvents" -> overview.totalEvents,
+      "playerCount" -> overview.playerCount,
+      "games" -> ujson.Arr.from(overview.games.map(gameOverview))
+    )
+
   def error(message: String): ujson.Value = ujson.Obj("error" -> message)
+
+  private def gameOverview(game: GameOverview): ujson.Value =
+    ujson.Obj(
+      "gameId" -> game.gameId,
+      "matches" -> game.matches,
+      "completed" -> game.completed,
+      "incomplete" -> game.incomplete,
+      "totalEvents" -> game.totalEvents,
+      "playerCount" -> game.playerCount,
+      "averageDurationSeconds" -> number(game.averageDurationSeconds)
+    )
 
   private def player(analysis: PlayerAnalysis): ujson.Value =
     ujson.Obj(

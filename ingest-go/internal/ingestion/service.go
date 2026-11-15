@@ -63,6 +63,10 @@ func (service *Service) ActiveMatches() int {
 	return service.registry.ActiveMatches()
 }
 
+func (service *Service) ActiveMatchesByGame() map[string]int {
+	return service.registry.ActiveMatchesByGame()
+}
+
 func (service *Service) RecentRejections() []rejectedlog.Entry {
 	return service.rejections.Recent()
 }

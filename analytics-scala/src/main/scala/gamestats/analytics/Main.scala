@@ -1,7 +1,7 @@
 package gamestats.analytics
 
 import gamestats.analytics.analysis.GameAnalyzerRegistry
-import gamestats.analytics.analysis.games.{CombatAnalyzer, RacingAnalyzer}
+import gamestats.analytics.analysis.games.{CombatAnalyzer, Connect4Analyzer, MemoryAnalyzer, MinesweeperAnalyzer, RacingAnalyzer}
 import gamestats.analytics.http.AnalyticsRoutes
 import gamestats.analytics.service.AnalyticsService
 import java.nio.file.Path
@@ -22,6 +22,6 @@ object Main extends cask.Main:
       case Some(directory) => FileAnalysisStore.open(Path.of(directory), reportProblem)
       case None            => InMemoryAnalysisStore()
 
-  private val service = AnalyticsService(GameAnalyzerRegistry(List(RacingAnalyzer, CombatAnalyzer)), store)
+  private val service = AnalyticsService(GameAnalyzerRegistry(List(RacingAnalyzer, CombatAnalyzer, Connect4Analyzer, MemoryAnalyzer, MinesweeperAnalyzer)), store)
 
   val allRoutes: Seq[cask.Routes] = Seq(AnalyticsRoutes(service))

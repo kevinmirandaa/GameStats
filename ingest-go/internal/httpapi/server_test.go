@@ -226,6 +226,10 @@ func TestHealthMetricsAndRejectedEndpoints(t *testing.T) {
 	if byGame["racing"] != float64(1) {
 		t.Fatalf("metrics should count accepted events per game but got %v", metricsAnswer["eventsAcceptedByGame"])
 	}
+	activeByGame, _ := metricsAnswer["activeMatchesByGame"].(map[string]any)
+	if activeByGame["racing"] != float64(1) {
+		t.Fatalf("metrics should report open matches per game but got %v", metricsAnswer["activeMatchesByGame"])
+	}
 	_, rejected := running.get(t, "/rejected")
 	if entries, _ := rejected["rejected"].([]any); len(entries) != 1 {
 		t.Fatalf("unexpected rejected list %v", rejected)

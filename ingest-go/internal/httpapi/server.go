@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"gamestats/ingest/internal/ingestion"
+	"gamestats/ingest/internal/metrics"
 )
 
 const (
@@ -27,6 +28,11 @@ type singleEventAnswer struct {
 	EventId string            `json:"eventId,omitempty"`
 	Status  string            `json:"status,omitempty"`
 	Errors  []rejectionDetail `json:"errors,omitempty"`
+}
+
+type metricsAnswer struct {
+	metrics.Snapshot
+	ActiveMatchesByGame map[string]int `json:"activeMatchesByGame"`
 }
 
 type batchAnswer struct {
@@ -91,7 +97,7 @@ func (server *Server) reportHealth(response http.ResponseWriter, _ *http.Request
 
 func (server *Server) reportMetrics(response http.ResponseWriter, _ *http.Request) {
 	snapshot := server.service.Counters().Snapshot(server.service.ActiveMatches())
-	writeJSON(response, http.StatusOK, snapshot)
+	writeJSON(response, http.StatusOK, metricsAnswer{Snapshot: snapshot, ActiveMatchesByGame: server.service.ActiveMatchesByGame()})
 }
 
 func (server *Server) reportRejected(response http.ResponseWriter, _ *http.Request) {
