@@ -31,6 +31,12 @@ jobs:
             context: analytics-scala
           - image: gamestats-simulator
             context: simulator
+          - image: gamestats-console
+            context: console
+          - image: gamestats-prolog
+            context: prolog-ai
+          - image: gamestats-demo
+            context: demo
     steps:
       - uses: actions/checkout@v4
       - name: Nombre del registro en minusculas
@@ -78,6 +84,16 @@ jobs:
           SMOKE_BUILD: "0"
           KEEP_UP: "1"
         run: ./qa/smoke.sh
+      - name: Verificar la consola desplegada con partidas reales
+        env:
+          GAMESTATS_TAG: ${{ github.sha }}
+          E2E_COMPOSE_FILE: deploy/docker-compose.published.yml
+        run: |
+          docker compose -f deploy/docker-compose.published.yml --profile demo run --rm demo
+          python3 qa/console_e2e.py
       - name: Registros de los contenedores
         if: failure()
-        run: docker compose -f deploy/docker-compose.published.yml --profile simulation logs --no-color
+        run: docker compose -f deploy/docker-compose.published.yml --profile simulation --profile demo logs --no-color
+      - name: Detener
+        if: always()
+        run: docker compose -f deploy/docker-compose.published.yml --profile simulation --profile demo down --volumes --remove-orphans
