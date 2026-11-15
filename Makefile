@@ -1,20 +1,34 @@
 COMPOSE := docker compose -f deploy/docker-compose.yml
 
-.PHONY: build test up down simulate simulate-files inbox-add inbox-demo smoke logs
+.PHONY: build test test-console test-prolog up down demo e2e simulate simulate-files inbox-add inbox-demo smoke logs
 
 build:
-	$(COMPOSE) --profile simulation build
+	$(COMPOSE) --profile simulation --profile demo build
 
 test:
 	cd ingest-go && go vet ./... && go test -race ./...
 	cd simulator && go vet ./... && go test -race ./...
 	cd analytics-scala && sbt -batch test
+	$(MAKE) test-console
+	$(MAKE) test-prolog
+
+test-console:
+	docker build --target build -t gamestats-console-test console
+
+test-prolog:
+	docker build --target verified -t gamestats-prolog-test prolog-ai
+
+demo:
+	$(COMPOSE) --profile demo run --rm demo
+
+e2e:
+	python3 qa/console_e2e.py
 
 up:
 	$(COMPOSE) up -d --build --wait
 
 down:
-	$(COMPOSE) --profile simulation down --volumes --remove-orphans
+	$(COMPOSE) --profile simulation --profile demo down --volumes --remove-orphans
 
 simulate:
 	$(COMPOSE) --profile simulation run --rm simulator

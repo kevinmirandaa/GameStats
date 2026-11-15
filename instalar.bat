@@ -13,22 +13,26 @@ if errorlevel 1 (
   exit /b 1
 )
 
-echo Construyendo y levantando GameStats (la primera vez tarda unos minutos)
+echo Construyendo y levantando GameConsole y GameStats (la primera vez tarda varios minutos)
 docker compose -f deploy\docker-compose.yml up -d --build --wait
 if errorlevel 1 exit /b 1
 
-if not "%1"=="sindemo" (
-  echo Generando datos de demostracion
-  docker compose -f deploy\docker-compose.yml --profile simulation run --rm simulator
-  timeout /t 6 /nobreak >nul
+set "skipdemo="
+if "%1"=="sindemo" set "skipdemo=1"
+if "%1"=="--sin-demo" set "skipdemo=1"
+if not defined skipdemo (
+  echo Jugando partidas de demostracion a traves de la consola
+  docker compose -f deploy\docker-compose.yml --profile demo run --rm demo
 )
 
 echo.
-echo    GameStats esta listo. Abre el panel de resultados aqui:
+echo GameConsole esta listo.
 echo.
-echo                  http://localhost:8081
+echo   Consola de juegos:           http://localhost:8100
+echo   Panel de estadisticas:       http://localhost:8100/#panel
+echo   Panel propio de GameStats:   http://localhost:8081
 echo.
 echo Para detener: detener.bat
 echo.
 
-start http://localhost:8081
+start http://localhost:8100
